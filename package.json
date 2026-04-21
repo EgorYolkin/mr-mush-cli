@@ -6,8 +6,11 @@
     "agents-engine": "./bin/agents-engine.js"
   },
   "dependencies": {
+    "@messageformat/core": "^3.4.0",
     "@clack/prompts": "^0.9.1",
     "chalk": "^5.4.1",
-    "figures": "^6.1.0"
+    "figures": "^6.1.0",
+    "smol-toml": "^1.6.1",
+    "zod": "^4.3.6"
   }
 }

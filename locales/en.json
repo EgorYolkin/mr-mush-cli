@@ -1,0 +1,125 @@
+{
+  "app": {
+    "fatalError": "Fatal error: {message}"
+  },
+  "providers": {
+    "openai": {
+      "label": "OpenAI / Codex",
+      "execFailed": "codex exec exited with code {code}"
+    },
+    "anthropic": {
+      "label": "Anthropic Claude",
+      "execFailed": "claude exited with code {code}"
+    },
+    "google": {
+      "label": "Google Gemini",
+      "missingEnv": "Environment variable {envKey} is not set"
+    },
+    "notInstalledSuffix": "not installed"
+  },
+  "setup": {
+    "cancelled": "Setup cancelled",
+    "spinner": {
+      "checkingCli": "Checking installed CLIs...",
+      "ready": "Ready",
+      "loadingModels": "Loading models via {providerId} CLI...",
+      "modelsFound": "Models found: {count}",
+      "loadingModelsFailed": "Failed to load models"
+    },
+    "errors": {
+      "noSupportedCli": "No supported CLI found ({binaries})"
+    },
+    "prompts": {
+      "provider": "Choose a provider:",
+      "model": "Choose a model:"
+    }
+  },
+  "chat": {
+    "messageDivider": "─",
+    "statusBar": {
+      "template": "{project} | {providerModel} | {thinkingLabel}:{thinkingLevel} | {profileLabel}:{profileValue}",
+      "thinkingLabel": "think",
+      "profileLabel": "profile",
+      "emptyValue": "–"
+    },
+    "labels": {
+      "you": "you"
+    },
+    "messages": {
+      "aborted": "aborted"
+    },
+    "errors": {
+      "requestFailed": "Error: {message}"
+    }
+  },
+  "thinking": {
+    "words": [
+      "Thinking",
+      "Reflecting",
+      "Considering",
+      "Processing",
+      "Analyzing",
+      "Reasoning",
+      "Ebbing"
+    ],
+    "elapsed": {
+      "seconds": "{seconds}s",
+      "minutes": "{minutes}m {seconds}s"
+    },
+    "line": "{bullet} {word}... ({elapsed})"
+  },
+  "commands": {
+    "descriptions": {
+      "think": "Set thinking effort level",
+      "config": "Show, set, or persist config",
+      "provider": "Switch active provider",
+      "model": "Switch active model",
+      "profile": "Switch active profile",
+      "prompt": "Inspect or edit prompt layers",
+      "statusbar": "Configure status bar",
+      "dot": "Choose message marker"
+    },
+    "args": {
+      "off": "No reasoning",
+      "minimal": "Minimal reasoning",
+      "low": "Low effort",
+      "medium": "Medium effort",
+      "high": "High effort",
+      "xhigh": "Extra high effort",
+      "dot": "Message marker"
+    },
+    "messages": {
+      "thinkingSet": "{tick} thinking: {level}",
+      "unknownCommand": "unknown command: /{command}",
+      "errorPrefix": "Error:",
+      "configUpdated": "config updated: {path}",
+      "configSaved": "config saved: {path}",
+      "providerSet": "provider: {providerId}",
+      "modelSet": "model: {model}",
+      "profileSet": "profile: {profile}",
+      "dotSet": "dot: {dot}",
+      "statusbarSet": "statusbar: {prompt}",
+      "promptEdited": "prompt edited: {layer}",
+      "promptReset": "prompt reset: {layer}",
+      "promptHeader": "# {layer}"
+    },
+    "errors": {
+      "unknownPromptLayer": "Unknown prompt layer: {layer}",
+      "editorExited": "{editor} exited with code {code}",
+      "usageConfigSet": "Usage: /config set <path> <value>",
+      "unknownConfigSubcommand": "Unknown command /config {subcommand}",
+      "usageProviderUse": "Usage: /provider use <id>",
+      "usageModelUse": "Usage: /model use <slug>",
+      "usageProfileUse": "Usage: /profile use <name>",
+      "usageStatusbar": "Usage: /statusbar <template>, e.g. /statusbar {folder} | {model} | {thinking} | {tokens}",
+      "unknownPromptSubcommand": "Unknown command /prompt {subcommand}"
+    }
+  },
+  "warnings": {
+    "overrideLoadFailed": "Warning: failed to load {scope} locale file {path}: {message}",
+    "overrideInvalid": "Warning: invalid message at {key} in {scope} locale file {path}: {message}"
+  },
+  "errors": {
+    "unknownProvider": "Unknown provider: {id}"
+  }
+}

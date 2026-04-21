@@ -4,7 +4,7 @@ const userRole = "user";
 const chatSplitter = "—";
 
 // components fabric
-export const createComponents = (theme) => ({
+export const createComponents = (theme, i18n) => ({
   header: (title) => {
     console.clear();
     p.intro(theme.colors.primary.bgBlack(` ${title} `));
@@ -14,7 +14,8 @@ export const createComponents = (theme) => ({
     const symbol = role === userRole ? theme.symbols.user : theme.symbols.ai;
     const color =
       role === userRole ? theme.colors.primary : theme.colors.success;
-    console.log(`${symbol} ${color.bold(role.toUpperCase())}: ${text}\n`);
+    const roleLabel = i18n?.raw(`ui.roles.${role}`) ?? role.toUpperCase();
+    console.log(`${symbol} ${color.bold(roleLabel)}: ${text}\n`);
   },
 
   divider: () =>

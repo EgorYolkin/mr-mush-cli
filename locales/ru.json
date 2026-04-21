@@ -1,0 +1,125 @@
+{
+  "app": {
+    "fatalError": "Критическая ошибка: {message}"
+  },
+  "providers": {
+    "openai": {
+      "label": "OpenAI / Codex",
+      "execFailed": "codex exec завершился с кодом {code}"
+    },
+    "anthropic": {
+      "label": "Anthropic Claude",
+      "execFailed": "claude завершился с кодом {code}"
+    },
+    "google": {
+      "label": "Google Gemini",
+      "missingEnv": "Не задана переменная {envKey}"
+    },
+    "notInstalledSuffix": "не установлен"
+  },
+  "setup": {
+    "cancelled": "Настройка прервана",
+    "spinner": {
+      "checkingCli": "Проверяю установленные CLI...",
+      "ready": "Готово",
+      "loadingModels": "Загружаю модели через {providerId} CLI...",
+      "modelsFound": "Найдено моделей: {count}",
+      "loadingModelsFailed": "Не удалось загрузить модели"
+    },
+    "errors": {
+      "noSupportedCli": "Не найден ни один поддерживаемый CLI ({binaries})"
+    },
+    "prompts": {
+      "provider": "Выберите провайдера:",
+      "model": "Выберите модель:"
+    }
+  },
+  "chat": {
+    "messageDivider": "─",
+    "statusBar": {
+      "template": "{project} | {providerModel} | {thinkingLabel}:{thinkingLevel} | {profileLabel}:{profileValue}",
+      "thinkingLabel": "think",
+      "profileLabel": "profile",
+      "emptyValue": "–"
+    },
+    "labels": {
+      "you": "you"
+    },
+    "messages": {
+      "aborted": "прервано"
+    },
+    "errors": {
+      "requestFailed": "Ошибка: {message}"
+    }
+  },
+  "thinking": {
+    "words": [
+      "Thinking",
+      "Reflecting",
+      "Considering",
+      "Processing",
+      "Analyzing",
+      "Reasoning",
+      "Ebbing"
+    ],
+    "elapsed": {
+      "seconds": "{seconds}с",
+      "minutes": "{minutes}м {seconds}с"
+    },
+    "line": "{bullet} {word}... ({elapsed})"
+  },
+  "commands": {
+    "descriptions": {
+      "think": "Установить уровень размышления",
+      "config": "Показать, изменить или сохранить конфиг",
+      "provider": "Переключить активный провайдер",
+      "model": "Переключить активную модель",
+      "profile": "Переключить активный профиль",
+      "prompt": "Просмотреть или изменить prompt layers",
+      "statusbar": "Настроить status bar",
+      "dot": "Выбрать маркер сообщений"
+    },
+    "args": {
+      "off": "Без reasoning",
+      "minimal": "Минимальный reasoning",
+      "low": "Низкий уровень",
+      "medium": "Средний уровень",
+      "high": "Высокий уровень",
+      "xhigh": "Максимальный уровень",
+      "dot": "Маркер сообщений"
+    },
+    "messages": {
+      "thinkingSet": "{tick} thinking: {level}",
+      "unknownCommand": "неизвестная команда: /{command}",
+      "errorPrefix": "Ошибка:",
+      "configUpdated": "config updated: {path}",
+      "configSaved": "config saved: {path}",
+      "providerSet": "provider: {providerId}",
+      "modelSet": "model: {model}",
+      "profileSet": "profile: {profile}",
+      "dotSet": "dot: {dot}",
+      "statusbarSet": "statusbar: {prompt}",
+      "promptEdited": "prompt edited: {layer}",
+      "promptReset": "prompt reset: {layer}",
+      "promptHeader": "# {layer}"
+    },
+    "errors": {
+      "unknownPromptLayer": "Неизвестный prompt layer: {layer}",
+      "editorExited": "{editor} завершился с кодом {code}",
+      "usageConfigSet": "Использование: /config set <path> <value>",
+      "unknownConfigSubcommand": "Неизвестная команда /config {subcommand}",
+      "usageProviderUse": "Использование: /provider use <id>",
+      "usageModelUse": "Использование: /model use <slug>",
+      "usageProfileUse": "Использование: /profile use <name>",
+      "usageStatusbar": "Использование: /statusbar <template>, например /statusbar {folder} | {model} | {thinking} | {tokens}",
+      "unknownPromptSubcommand": "Неизвестная команда /prompt {subcommand}"
+    }
+  },
+  "warnings": {
+    "overrideLoadFailed": "Предупреждение: не удалось загрузить locale-файл {scope} {path}: {message}",
+    "overrideInvalid": "Предупреждение: невалидное сообщение {key} в locale-файле {scope} {path}: {message}"
+  },
+  "errors": {
+    "unknownProvider": "Неизвестный провайдер: {id}"
+  }
+}

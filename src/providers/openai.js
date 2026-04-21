@@ -2,12 +2,21 @@ import { execFile, spawn } from "node:child_process";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
+const EFFORT_MAP = {
+  off: null,
+  minimal: "low",
+  low: "low",
+  medium: "medium",
+  high: "high",
+  xhigh: "xhigh",
+};
 
 export const openaiProvider = {
   id: "openai",
-  label: "OpenAI / Codex",
+  labelKey: "providers.openai.label",
   source: "cli",
   binary: "codex",
+  defaultModel: "gpt-5.4",
 
   async fetchModels() {
     const { stdout } = await execFileAsync("codex", ["debug", "models"]);
@@ -17,21 +26,45 @@ export const openaiProvider = {
       .map((m) => ({ value: m.slug, label: m.display_name ?? m.slug }));
   },
 
-  // Возвращает Promise<{ text: string, usage: object }>
-  exec(model, prompt) {
+  getAuthRequirements(resolvedConfig) {
+    return resolvedConfig.auth.openai;
+  },
+
+  exec(resolvedConfig, prompt, runtimeOverrides = {}, signal = null) {
+    const rawLevel =
+      runtimeOverrides.thinkingLevel ?? resolvedConfig.thinkingLevel;
+    // Используем hasOwn чтобы null (для 'off') не проваливался через ?? к rawLevel
+    const effort = Object.hasOwn(EFFORT_MAP, rawLevel)
+      ? EFFORT_MAP[rawLevel]
+      : rawLevel;
+    const model = runtimeOverrides.model ?? resolvedConfig.activeModel;
+    const args = [
+      "exec",
+      "--json",
+      "--ephemeral",
+      "--skip-git-repo-check",
+      "-m",
+      model,
+    ];
+    if (effort) args.push("-c", `model_reasoning_effort="${effort}"`);
+    const composedPrompt = resolvedConfig.promptStack?.text
+      ? `${resolvedConfig.promptStack.text}\n\nUser request:\n${prompt}`
+      : prompt;
+    args.push(composedPrompt);
+
     return new Promise((resolve, reject) => {
-      const child = spawn(
-        "codex",
-        [
-          "exec",
-          "--json",
-          "--ephemeral",
-          "--skip-git-repo-check",
-          "-m", model,
-          prompt,
-        ],
-        { stdio: ["ignore", "pipe", "pipe"] },
-      );
+      const child = spawn("codex", args, { stdio: ["ignore", "pipe", "pipe"] });
+
+      if (signal) {
+        signal.addEventListener(
+          "abort",
+          () => {
+            child.kill("SIGINT");
+            reject(new Error("cancelled"));
+          },
+          { once: true },
+        );
+      }
 
       let lastMessage = null;
       let usage = null;
@@ -65,7 +98,11 @@ export const openaiProvider = {
         if (lastMessage !== null) {
           resolve({ text: lastMessage, usage });
         } else {
-          reject(new Error(`codex exec завершился с кодом ${code}`));
+          reject(
+            new Error(
+              resolvedConfig.i18n.t("providers.openai.execFailed", { code }),
+            ),
+          );
         }
       });
 
