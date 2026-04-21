@@ -1,0 +1,13 @@
+{
+  "name": "agents-engine-cli",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "agents-engine": "./bin/agents-engine.js"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.9.1",
+    "chalk": "^5.4.1",
+    "figures": "^6.1.0"
+  }
+}
