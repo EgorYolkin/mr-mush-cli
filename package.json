@@ -3,7 +3,8 @@
   "version": "1.1.5",
   "type": "module",
   "bin": {
-    "mrmush": "./bin/agents-engine.js"
+    "mr-mush": "./bin/mr-mush.js",
+    "mrmush": "./bin/mr-mush.js"
   },
   "dependencies": {
     "@clack/prompts": "^0.9.1",

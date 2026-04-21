@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This repository is a Node.js ESM CLI package. The executable entry point is `bin/agents-engine.js`, which initializes locale, UI, and routing. Core source lives in `src/`:
+This repository is a Node.js ESM CLI package. The executable entry point is `bin/mr-mush.js`, which boots the Mr. Mush CLI, locale, UI, and routing. Core source lives in `src/`:
 
 - `src/router.js` coordinates boot, setup, and chat scenes.
 - `src/config/` loads and validates TOML-backed configuration with Zod schemas.
@@ -15,8 +15,8 @@ There is no dedicated `tests/` directory yet. Add one when introducing the test 
 ## Build, Test, and Development Commands
 
 - `npm install` installs runtime dependencies from `package-lock.json`.
-- `node bin/agents-engine.js` runs the CLI locally from the working tree.
-- `npm link` exposes the `agents-engine` command globally.
+- `node bin/mr-mush.js` runs Mr. Mush locally from the working tree.
+- `npm link` exposes the `mr-mush` command globally.
 - `npm test` is not defined yet; add a package script before using it in CI.
 
 Prefer standard script names: `test`, `lint`, `format`, and `start`.
@@ -35,7 +35,7 @@ Target at least 80% coverage for new feature work and include regression tests f
 
 ## Commit & Pull Request Guidelines
 
-The repository uses Conventional Commits, as shown by `feat: initialize agents engine cli`. Use formats such as `feat: add provider cache`, `fix: handle invalid config`, or `test: cover router boot flow`.
+The repository uses Conventional Commits, for example `feat: initialize mr mush cli`. Use formats such as `feat: add provider cache`, `fix: handle invalid config`, or `test: cover router boot flow`.
 
 Pull requests should include a summary, verification commands, linked issues when applicable, and terminal output for user-facing CLI changes. Note new environment variables, config fields, or migration steps.
 
