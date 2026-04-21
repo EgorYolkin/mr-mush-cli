@@ -1,3 +1,12 @@
+```text
+      ▄▄███▄▄
+    ▄███▀█▀███▄
+    ▀█████████▀
+       █████
+        █ █
+      ▀▀▀▀▀▀▀
+```
+
 # mush
 
 Минималистичный локальный AI CLI с акцентом на TUI, стриминг, tool calling и контекстную инженерию.
@@ -12,15 +21,6 @@
 ![license](https://img.shields.io/badge/license-MIT-2563eb?style=flat-square)
 
 ![preview](resources/preview.gif)
-
-```text
-      ▄▄███▄▄
-    ▄███▀█▀███▄
-    ▀█████████▀
-       █████
-        █ █
-      ▀▀▀▀▀▀▀
-```
 
 ## Что это
 
