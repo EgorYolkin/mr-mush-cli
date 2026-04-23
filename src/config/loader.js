@@ -4,7 +4,7 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { parse as parseToml, stringify as stringifyToml } from "smol-toml";
-import { getRepoMapText } from "../intelligence/index.js";
+import { getRepoMapResult } from "../intelligence/index.js";
 import {
   builtInConfig,
   DEFAULT_STATUSBAR_TEMPLATE,
@@ -354,12 +354,15 @@ export async function resolvePromptStack(resolvedConfig, cwd = process.cwd()) {
     ?? builtInConfig.intelligence.repo_map.enabled;
   const agentsEngineFile = await findProjectFileUpwards(cwd, "MRMUSH.md");
   const agentsFile = await findProjectFileUpwards(cwd, "AGENTS.md");
-  const repoMapText = repoMapEnabled
-    ? await getRepoMapText(cwd, {
+  const repoMapResult = repoMapEnabled
+    ? await getRepoMapResult(cwd, {
+        mode: resolvedConfig.intelligence?.repo_map?.mode,
         tokenBudget: resolvedConfig.intelligence?.repo_map?.token_budget,
+        maxSymbolsPerFile: resolvedConfig.intelligence?.repo_map?.max_symbols_per_file,
+        includeInternalSymbols: resolvedConfig.intelligence?.repo_map?.include_internal_symbols,
         deniedPaths: resolvedConfig.intelligence?.repo_map?.denied_paths,
       })
-    : "";
+    : { text: "", stats: null };
   const layers = [
     { id: "project-mrmush", source: agentsEngineFile, content: agentsEngineFile ? await maybeReadText(agentsEngineFile) : null },
     { id: "built-in", source: "built-in", content: DEFAULT_SYSTEM_PROMPT },
@@ -367,7 +370,12 @@ export async function resolvePromptStack(resolvedConfig, cwd = process.cwd()) {
     { id: "profile", source: paths.profilePromptFile(profile), content: await maybeReadText(paths.profilePromptFile(profile)) },
     { id: "provider", source: paths.providerPromptFile(providerId), content: await maybeReadText(paths.providerPromptFile(providerId)) },
     { id: "project-agents", source: agentsFile, content: agentsFile ? await maybeReadText(agentsFile) : null },
-    { id: "repo-map", source: "repo-map", content: repoMapText },
+    {
+      id: "repo-map",
+      source: "repo-map",
+      content: repoMapResult.text,
+      meta: repoMapResult.stats,
+    },
     {
       id: "tools-file-ops",
       source: fileURLToPath(TOOLS_FILE_OPS_PROMPT_URL),

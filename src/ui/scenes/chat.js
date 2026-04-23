@@ -683,6 +683,11 @@ function summarizeRepoMapLayer(config, promptStack) {
     return "intelligence: repo-map enabled but empty";
   }
 
+  const mode = repoLayer.meta?.mode ?? config?.intelligence?.repo_map?.mode ?? "dense";
+  const files = repoLayer.meta?.files ?? 0;
+  const symbols = repoLayer.meta?.symbols ?? 0;
+  const exportedSymbols = repoLayer.meta?.exportedSymbols ?? 0;
+  const internalSymbols = repoLayer.meta?.internalSymbols ?? 0;
   const lines = content.split("\n");
   const fileLines = lines.filter((line) => (
     line
@@ -698,7 +703,7 @@ function summarizeRepoMapLayer(config, promptStack) {
   const approxTokens = Math.ceil(content.length / 4);
 
   return [
-    `intelligence: repo-map attached tokens~=${approxTokens} files=${fileLines.length}`,
+    `intelligence: repo-map attached mode=${mode} tokens~=${approxTokens} files=${files || fileLines.length} symbols=${symbols} exported=${exportedSymbols} internal=${internalSymbols}`,
     previewFiles ? `intelligence: top files ${previewFiles}` : null,
   ].filter(Boolean).join("\n");
 }

@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { buildRepoMap } from "./repo-map.js";
+import { buildRepoMapResult } from "./repo-map.js";
 
 const REPO_INTELLIGENCE_PATTERNS = [
   /repo\s*map/i,
@@ -192,10 +192,33 @@ export function buildRepoMapAnswer(repoMapText, prompt, metadata = {}) {
 
 export async function getRepoMapText(cwd, options = {}) {
   try {
-    const text = await buildRepoMap(cwd, options);
-    return wrapRepoMap(text);
+    const result = await buildRepoMapResult(cwd, options);
+    return wrapRepoMap(result.text);
   } catch {
     return "";
+  }
+}
+
+export async function getRepoMapResult(cwd, options = {}) {
+  try {
+    const result = await buildRepoMapResult(cwd, options);
+    return {
+      text: wrapRepoMap(result.text),
+      stats: result.stats,
+      blocks: result.blocks,
+    };
+  } catch {
+    return {
+      text: "",
+      stats: {
+        mode: options.mode === "compact" ? "compact" : "dense",
+        files: 0,
+        symbols: 0,
+        exportedSymbols: 0,
+        internalSymbols: 0,
+      },
+      blocks: [],
+    };
   }
 }
 

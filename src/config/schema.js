@@ -77,10 +77,15 @@ const orchestratorSchema = z.object({
   router_model: z.string().min(1).default("claude-haiku-4-5-20251001"),
 }).strict();
 
+const repoMapModeSchema = z.enum(["dense", "compact"]);
+
 const intelligenceSchema = z.object({
   repo_map: z.object({
     enabled: z.boolean().default(true),
+    mode: repoMapModeSchema.default("dense"),
     token_budget: z.number().int().positive().default(2000),
+    max_symbols_per_file: z.number().int().positive().default(6),
+    include_internal_symbols: z.boolean().default(true),
     denied_paths: z.array(z.string().min(1)).default([
       "test",
       "tests",
@@ -169,7 +174,10 @@ export const builtInConfig = Object.freeze(userConfigSchema.parse({
   intelligence: {
     repo_map: {
       enabled: true,
+      mode: "dense",
       token_budget: 2000,
+      max_symbols_per_file: 6,
+      include_internal_symbols: true,
       denied_paths: [
         "test",
         "tests",
