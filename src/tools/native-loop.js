@@ -56,7 +56,14 @@ function normalizeToolCalls(providerId, rawToolCalls) {
  * @param {object[]} normalizedCalls - Internal tool calls
  * @param {Array<{ id: string, name: string, result: object }>} results
  */
-function appendToolRound(providerId, messages, assistantText, normalizedCalls, results) {
+function appendToolRound(
+  providerId,
+  messages,
+  assistantText,
+  normalizedCalls,
+  results,
+  assistantMessage = null,
+) {
   if (providerId === "google") {
     // Gemini: assistant turn with functionCall parts, then user turn with functionResponse parts
     messages.push({
@@ -72,15 +79,17 @@ function appendToolRound(providerId, messages, assistantText, normalizedCalls, r
     }
   } else {
     // OpenAI-compatible: assistant message with tool_calls, then tool role messages
-    messages.push({
-      role: "assistant",
-      content: assistantText || null,
-      tool_calls: normalizedCalls.map((tc) => ({
-        id: tc.id,
-        type: "function",
-        function: { name: tc.name, arguments: JSON.stringify(tc.args) },
-      })),
-    });
+    messages.push(
+      assistantMessage ?? {
+        role: "assistant",
+        content: assistantText || null,
+        tool_calls: normalizedCalls.map((tc) => ({
+          id: tc.id,
+          type: "function",
+          function: { name: tc.name, arguments: JSON.stringify(tc.args) },
+        })),
+      },
+    );
     for (const result of results) {
       messages.push(formatToolResultOpenAI(result));
     }
@@ -154,9 +163,11 @@ export async function runWithNativeTools({
     const normalizedCalls = normalizeToolCalls(provider.id, rawToolCalls);
 
     if (onAssistantToolIntent) {
-      for (const call of normalizedCalls) {
-        await onAssistantToolIntent({ assistantText: response.text ?? "", toolCall: call });
-      }
+      await onAssistantToolIntent({
+        assistantText: response.text ?? "",
+        assistantMessage: response.assistantMessage ?? null,
+        toolCalls: normalizedCalls,
+      });
     }
 
     const toolResults = [];
@@ -193,7 +204,14 @@ export async function runWithNativeTools({
       }
     }
 
-    appendToolRound(provider.id, currentMessages, response.text ?? "", normalizedCalls, toolResults);
+    appendToolRound(
+      provider.id,
+      currentMessages,
+      response.text ?? "",
+      normalizedCalls,
+      toolResults,
+      response.assistantMessage ?? null,
+    );
   }
 
   return lastResponse ?? { text: "", usage: null };

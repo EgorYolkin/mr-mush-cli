@@ -16,7 +16,7 @@ import { runProviderWithTools } from "../../tools/orchestrator.js";
 import { createSession, recordMessage } from "../../history/session.js";
 import { formatDuration, formatTokenCount } from "../../history/metrics.js";
 import { buildMushCardFrame } from "../mush-card.js";
-import { INLINE_TERMINAL_MODE } from "../components/terminal.js";
+import { prepareInlineTerminalSurface } from "../components/terminal.js";
 import { activeTheme, color } from "../components/theme.js";
 import { frameWidth, fitText } from "../components/layout.js";
 import {
@@ -153,7 +153,7 @@ function buildSplashFrame(context) {
   ]);
 }
 
-// ─── Messages — вне рамки ─────────────────────────────────────────────────────
+// ─── Messages outside the main frame ──────────────────────────────────────────
 
 // ─── Print helpers — own process.stdout.write, call frame builders ────────────
 
@@ -187,16 +187,47 @@ function printExpandableTerminalEventMessage(entry, context) {
   return frame.blockHeight;
 }
 
-function buildMessagesFromTranscript(promptStack, transcript, currentPrompt) {
+function buildReplayAssistantMessage(entry, providerId) {
+  if (entry.role !== "assistant") return null;
+  if (entry.meta?.kind) return null;
+
+  const payload = entry.assistantPayload ?? null;
+  if (providerId === "deepseek" && payload) {
+    return {
+      role: "assistant",
+      content: payload.content ?? entry.text ?? "",
+      ...(payload.reasoning_content
+        ? { reasoning_content: payload.reasoning_content }
+        : {}),
+      ...(payload.tool_calls?.length ? { tool_calls: payload.tool_calls } : {}),
+    };
+  }
+
+  return {
+    role: "assistant",
+    content: entry.text ?? "",
+  };
+}
+
+export function buildMessagesFromTranscript(
+  promptStack,
+  transcript,
+  currentPrompt,
+  providerId,
+) {
   const messages = [];
   if (promptStack?.text) {
     messages.push({ role: "system", content: promptStack.text });
   }
   for (const entry of transcript) {
-    messages.push({
-      role: entry.role === "assistant" ? "assistant" : "user",
-      content: entry.text,
-    });
+    if (entry.role === "user") {
+      messages.push({ role: "user", content: entry.text });
+      continue;
+    }
+    const assistantMessage = buildReplayAssistantMessage(entry, providerId);
+    if (assistantMessage) {
+      messages.push(assistantMessage);
+    }
   }
   messages.push({ role: "user", content: currentPrompt });
   return messages;
@@ -459,9 +490,20 @@ export async function runChatScreen(context) {
     resetDelayMs: context.chatSessionOrchestrator?.resetDelayMs ?? 30_000,
   };
 
-  function appendAssistantMessage(text, usage = null, meta = null) {
-    if (!text?.trim()) return;
-    transcript.push({ role: "assistant", text, meta });
+  function appendAssistantMessage(
+    text,
+    usage = null,
+    meta = null,
+    assistantPayload = null,
+  ) {
+    const normalizedText = text ?? "";
+    if (!normalizedText.trim() && !assistantPayload) return;
+    transcript.push({
+      role: "assistant",
+      text: normalizedText,
+      meta,
+      assistantPayload,
+    });
     context.currentSessionMetrics = {
       ...(context.currentSessionMetrics ?? {
         messageCount: 0,
@@ -483,9 +525,14 @@ export async function runChatScreen(context) {
     if (currentSession) {
       recordMessage(historyDir, currentSession.id, {
         role: "assistant",
-        content: text,
+        content: normalizedText,
         usage: usage ?? null,
+        ...(assistantPayload ? { assistantPayload } : {}),
       }).catch(() => {});
+    }
+    if (!normalizedText.trim()) {
+      renderedTranscriptEntries = transcript.length;
+      return;
     }
     if (meta?.kind === "tool_event") {
       printToolEventMessage(meta.title ?? "tool", text, context);
@@ -579,7 +626,7 @@ export async function runChatScreen(context) {
   }
 
   function setupViewport() {
-    process.stdout.write(INLINE_TERMINAL_MODE);
+    prepareInlineTerminalSurface();
     process.stdout.write("\n");
     splashFrame = buildSplashFrame(context);
     splashVisible = true;
@@ -589,6 +636,8 @@ export async function runChatScreen(context) {
   function renderTranscriptEntry(entry) {
     if (entry.role === "user") {
       printUserMessage(entry.text, context);
+    } else if (!entry.text?.trim()) {
+      return;
     } else if (entry.meta?.kind === "terminal_event") {
       printExpandableTerminalEventMessage(entry, context);
     } else if (entry.meta?.kind === "tool_event") {
@@ -679,7 +728,7 @@ export async function runChatScreen(context) {
         continue;
       }
 
-      // Команды
+      // Commands
       if (text.startsWith("/")) {
         transcript.push({ role: "user", text });
         context.currentSessionMetrics = {
@@ -726,7 +775,13 @@ export async function runChatScreen(context) {
             transcript.length,
             ...resumed.messages
               .filter((m) => m.role === "user" || m.role === "assistant")
-              .map((m) => ({ role: m.role, text: m.content })),
+              .map((m) => ({
+                role: m.role,
+                text: m.content,
+                ...(m.assistantPayload
+                  ? { assistantPayload: m.assistantPayload }
+                  : {}),
+              })),
           );
           redrawScreen({ fullRefresh: true });
         } else {
@@ -993,6 +1048,7 @@ export async function runChatScreen(context) {
           context.config.promptStack,
           transcript,
           promptForModel,
+          providerId,
         );
         const repoMapLayer = getRepoMapLayer(context.config.promptStack);
         if (context.runtimeOverrides.debug) {
@@ -1059,7 +1115,7 @@ export async function runChatScreen(context) {
               redrawScreen({ fullRefresh: true });
             }
           },
-          onAssistantToolIntent: async ({ assistantText }) => {
+          onAssistantToolIntent: async ({ assistantText, assistantMessage }) => {
             stopPendingAnimation();
             if (streamRedrawTimer) {
               clearTimeout(streamRedrawTimer);
@@ -1076,12 +1132,34 @@ export async function runChatScreen(context) {
               stripToolMarkup(streamedText).trim().length > 0
                 ? stripToolMarkup(streamedText)
                 : stripToolMarkup(assistantText);
-            if (visibleAssistantText?.trim()) {
-              appendAssistantMessage(visibleAssistantText);
-            }
+            appendAssistantMessage(
+              visibleAssistantText,
+              null,
+              null,
+              assistantMessage
+                ? {
+                    content: assistantMessage.content ?? "",
+                    ...(assistantMessage.reasoning_content
+                      ? {
+                          reasoning_content:
+                            assistantMessage.reasoning_content,
+                        }
+                      : {}),
+                    ...(assistantMessage.tool_calls?.length
+                      ? { tool_calls: assistantMessage.tool_calls }
+                      : {}),
+                  }
+                : null,
+            );
             streamedText = "";
           },
           onToolResult: async ({ toolCall, toolResult }) => {
+            stopPendingAnimation();
+            if (streamRedrawTimer) {
+              clearTimeout(streamRedrawTimer);
+              streamRedrawTimer = null;
+            }
+            clearLiveRegion();
             const meta = createTerminalEventMeta(toolCall, toolResult);
             if (meta?.text) {
               appendAssistantMessage(meta.text, null, meta);
@@ -1282,11 +1360,21 @@ export async function runChatScreen(context) {
         const assistantText = response.text || streamedText;
         if (assistantText) {
           clearLiveRegion();
-          appendAssistantMessage(assistantText, response.usage);
+          appendAssistantMessage(
+            assistantText,
+            response.usage,
+            null,
+            response.assistantMessage ?? null,
+          );
         }
       } else {
         clearLiveRegion();
-        appendAssistantMessage(response.text, response.usage);
+        appendAssistantMessage(
+          response.text,
+          response.usage,
+          null,
+          response.assistantMessage ?? null,
+        );
       }
       process.stdout.write("\n");
     }
