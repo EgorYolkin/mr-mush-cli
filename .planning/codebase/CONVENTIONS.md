@@ -112,7 +112,7 @@ if (typeof cmd !== "string" || cmd.trim().length === 0) {
 ## Comments
 
 **When to Comment:**
-- Explains WHY, not WHAT: "незавершённая строка остаётся в буфере" (incomplete line remains in buffer)
+- Explains WHY, not WHAT: "keep the incomplete line buffered until the next chunk"
 - Comments in Russian alongside English code (i18n context)
 - No excessive comments; code is self-documenting through names
 

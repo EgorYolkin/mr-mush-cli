@@ -17,14 +17,9 @@ function truncate(value, maxChars) {
   };
 }
 
-export function runBashCommand({ argv, cmd, cwd, timeoutMs, maxOutputChars, shell = false }) {
+export function runBashCommand({ argv, cmd, cwd, timeoutMs, maxOutputChars }) {
   return new Promise((resolve) => {
-    const child = shell ? spawn(cmd, {
-      cwd,
-      env: safeEnv(),
-      stdio: ["ignore", "pipe", "pipe"],
-      shell: "/bin/sh",
-    }) : spawn(argv[0], argv.slice(1), {
+    const child = spawn(argv[0], argv.slice(1), {
       cwd,
       env: safeEnv(),
       stdio: ["ignore", "pipe", "pipe"],

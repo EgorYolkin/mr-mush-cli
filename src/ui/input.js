@@ -2,6 +2,7 @@ import chalk from "chalk";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { getSuggestions, getUsageHint } from "../commands/index.js";
+import { frameWidth, fitText } from "./components/layout.js";
 
 const FILE_SUGGESTION_LIMIT = 50;
 const FILE_WALK_SKIP = new Set([
@@ -15,44 +16,24 @@ const FILE_WALK_SKIP = new Set([
   ".turbo",
 ]);
 
-function frameWidth() {
-  const columns = process.stdout.columns || 96;
-  return Math.max(6, columns - 4);
-}
-
 function createRenderState() {
-  return { cursorUpLines: 0, blockHeight: 0, renderedWidth: 0 };
+  return { cursorUpLines: 0, blockHeight: 0, totalRenderedLines: 0 };
 }
 
 function resetRenderState(state) {
   if (!state) return;
   state.cursorUpLines = 0;
   state.blockHeight = 0;
-  state.renderedWidth = 0;
-}
-
-function wrappedRows(width, columns = process.stdout.columns || 96) {
-  return Math.max(1, Math.ceil(Math.max(1, width) / Math.max(1, columns)));
-}
-
-function cursorUpLinesForCurrentTerminal(state) {
-  if (!state?.cursorUpLines) return 0;
-  const oldRowHeight = wrappedRows(state.renderedWidth);
-  return state.cursorUpLines * oldRowHeight;
+  state.totalRenderedLines = 0;
 }
 
 function clearRenderedState(state) {
-  const linesToGoUp = cursorUpLinesForCurrentTerminal(state);
+  // Use the actual number of rendered terminal lines for cleanup.
+  const linesToGoUp = state?.cursorUpLines ?? 0;
   if (linesToGoUp > 0) {
     process.stdout.write(`\x1b[${linesToGoUp}A`);
   }
   process.stdout.write("\r\x1b[J");
-}
-
-function fitLine(value, width) {
-  if (value.length <= width) return value + " ".repeat(width - value.length);
-  if (width <= 1) return " ".repeat(width);
-  return value.slice(0, width - 1) + "…";
 }
 
 function getCursorLocation(buffer, cursorIndex) {
@@ -268,7 +249,7 @@ function renderStatusbar(status, width) {
     .replaceAll("{messages}", status.messages ?? "–")
     .replaceAll("{session_tokens}", status.sessionTokens ?? "–")
     .replaceAll("{session_time}", status.sessionTime ?? "–")
-    .slice(0, Math.max(0, width));
+    .slice(0, Math.max(0, width + 20));
 }
 
 export function renderInputBox(buffer, suggestions = [], selectedIdx = 0, theme = {}, state = createRenderState(), status = null, cursorIndex = buffer.length, usageHint = null) {
@@ -277,7 +258,7 @@ export function renderInputBox(buffer, suggestions = [], selectedIdx = 0, theme 
   process.stdout.write(frame.text);
   state.cursorUpLines = frame.cursorUpLines;
   state.blockHeight = frame.blockHeight;
-  state.renderedWidth = frame.width;
+  state.totalRenderedLines = frame.blockHeight;
   return state;
 }
 
@@ -355,7 +336,7 @@ function buildInputFrame(buffer, suggestions = [], selectedIdx = 0, theme = {}, 
       isFirstVisualLine && usageHint?.text
         ? `${visualLine.text}${usageHint.text}`
         : visualLine.text;
-    const content = fitLine(rawContent, contentWidth);
+    const content = fitText(rawContent, contentWidth);
     const visibleText = isFirstVisualLine && usageHint?.text
       ? content.slice(0, Math.min(visualLine.text.length, content.length))
       : content;
@@ -372,19 +353,21 @@ function buildInputFrame(buffer, suggestions = [], selectedIdx = 0, theme = {}, 
     const absoluteIndex = suggestionWindowStart + index;
     const selected = absoluteIndex === selectedIdx;
     const labelWidth = Math.max(4, Math.min(14, Math.floor((width - 6) / 2)));
-    const label = fitLine(suggestion.label, labelWidth);
+    const label = fitText(suggestion.label, labelWidth);
     const descriptionWidth = Math.max(0, width - 6 - labelWidth - 2);
-    const description = chalk.dim(fitLine(suggestion.description, descriptionWidth));
+    const description = chalk.dim(fitText(suggestion.description, descriptionWidth));
 
     parts.push("\n");
     if (selected) {
+      const selContent = `${padding}` + chalk.cyan("▸ ") + chalk.bold(label) + "  " + description;
       parts.push(
-        `${borderColor(vertical)} ${padding}` + chalk.cyan("▸ ") + chalk.bold(label) + "  " + description,
+        `${borderColor(vertical)} ${selContent}${borderColor(vertical)}`,
       );
       continue;
     }
 
-    parts.push(`${borderColor(vertical)} ${padding}  ` + chalk.dim(label) + "  " + description);
+    const unselContent = `${padding}  ` + chalk.dim(label) + "  " + description;
+    parts.push(`${borderColor(vertical)} ${unselContent}${borderColor(vertical)}`);
   }
 
   if (activeSuggestions.length > suggestionCount) {
@@ -403,7 +386,7 @@ function buildInputFrame(buffer, suggestions = [], selectedIdx = 0, theme = {}, 
 
   if (statusbar) {
     parts.push("\n");
-    parts.push(chalk.dim(`  ${fitLine(statusbar, width - 2)}`));
+    parts.push(chalk.dim(`  ${fitText(statusbar, width - 2)}`));
   }
 
   const extraSummaryLine = activeSuggestions.length > suggestionCount ? 1 : 0;
@@ -420,10 +403,11 @@ function buildInputFrame(buffer, suggestions = [], selectedIdx = 0, theme = {}, 
 
   parts.push(`\r\x1b[${plainPrefixLength + cursorVisualColumn}C`);
 
+  const blockHeight = 1 + visualLines.length + suggestionCount + extraSummaryLine + 1 + statusLineCount;
   return {
     text: parts.join(""),
     cursorUpLines: cursorVisualLineIndex + 1,
-    blockHeight: 1 + visualLines.length + suggestionCount + extraSummaryLine + 1 + statusLineCount,
+    blockHeight,
     width,
   };
 }
@@ -527,15 +511,17 @@ export function promptInput(
     }
 
     function handleResize() {
-      // The terminal may wrap the previously rendered frame after a resize.
-      // Clear using the previous frame width before rendering the new width.
-      clearRenderedState(renderState);
-      resetRenderState(renderState);
-
       if (onResize) {
+        // The chat scene will do a full screen redraw, which correctly
+        // clears all content. Don't try to cursor-up-and-patch here
+        // because terminal reflow invalidates our line count tracking.
+        resetRenderState(renderState);
         onResize(rerender);
         return;
       }
+      // Standalone mode: best-effort clear (may leave artifacts on reflow).
+      clearRenderedState(renderState);
+      resetRenderState(renderState);
       rerender();
     }
 
@@ -579,13 +565,15 @@ export function promptInput(
           status.sessionTokens = formatTokens(target);
           rerender();
         }
-      }, 16);
+      }, 100);
     }
 
     function onData(key) {
       if (key === "\x03") {
-        process.stdout.write("\r\x1b[J\n");
+        clearRenderedInputBox(renderState);
         cleanup();
+        // Restore terminal: show cursor, clear line, move to start.
+        process.stdout.write("\x1b[?25h\r\x1b[J\n");
         process.exit(0);
       }
 
@@ -782,7 +770,7 @@ export function createPassiveInputBuffer(
 
   function onData(key) {
     if (key === "\x03") {
-      process.stdout.write("\r\x1b[J\n");
+      process.stdout.write("\x1b[?25h\r\x1b[J\n");
       process.exit(0);
     }
 

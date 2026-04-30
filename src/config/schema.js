@@ -163,7 +163,7 @@ const toolsSchema = z
         enabled: z.boolean().default(true),
         timeout_ms: z.number().int().positive().default(30_000),
         max_output_chars: z.number().int().positive().default(20_000),
-        max_calls: z.number().int().positive().default(8),
+        max_calls: z.number().int().positive().default(64),
         allowed_commands: z
           .array(z.string().min(1))
           .default([
@@ -285,7 +285,7 @@ export const builtInConfig = Object.freeze(
         enabled: true,
         timeout_ms: 30_000,
         max_output_chars: 20_000,
-        max_calls: 8,
+        max_calls: 64,
         allowed_commands: [
           "pwd",
           "ls",
@@ -296,6 +296,16 @@ export const builtInConfig = Object.freeze(
           "head",
           "tail",
           "tree",
+          "sort",
+          "wc",
+          "grep",
+          "file",
+          "stat",
+          "du",
+          "which",
+          "echo",
+          "basename",
+          "dirname",
         ],
         allowed_git_subcommands: ["status", "diff", "log", "show"],
       },

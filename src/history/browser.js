@@ -1,15 +1,10 @@
 import chalk from "chalk";
 import { listSessions, loadSession, deleteSession } from "./session.js";
+import { fitText } from "../ui/components/layout.js";
 
-function frameWidth() {
+function browserFrameWidth() {
   const columns = process.stdout.columns || 96;
   return Math.max(40, Math.min(columns - 2, 92));
-}
-
-function fitText(value, width) {
-  if (value.length <= width) return value + " ".repeat(width - value.length);
-  if (width <= 1) return " ";
-  return value.slice(0, width - 1) + "…";
 }
 
 function formatTimeAgo(iso) {
@@ -86,7 +81,7 @@ function renderBrowser(
   searchQuery = "",
   searchCursor = 0,
 ) {
-  const width = frameWidth();
+  const width = browserFrameWidth();
   const innerWidth = width - 2;
   const frame = theme.symbols?.frame ?? {};
   const topLeft = frame.topLeft ?? "╭";

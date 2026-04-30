@@ -67,16 +67,16 @@ test("buildRepoMapAnswer returns concise summary for project map prompts", () =>
     "  fn selectAction() [export]",
   ].join("\n");
 
-  const answer = buildRepoMapAnswer(repoMapText, "что это за проект? какая его карта?", {
+  const answer = buildRepoMapAnswer(repoMapText, "what is this project? show me the repo map", {
     cwd: path.resolve("."),
     name: "mr-mush",
     isCli: true,
     isEsm: true,
   });
 
-  assert.match(answer, /Это проект mr-mush/i);
-  assert.match(answer, /Ключевые зоны:/);
-  assert.match(answer, /Краткая карта:/);
+  assert.match(answer, /This is the mr-mush project/i);
+  assert.match(answer, /Key areas:/);
+  assert.match(answer, /Quick map:/);
   assert.match(answer, /`src\/config\/loader\.js`/);
   assert.ok(answer.length < 2500);
 });

@@ -99,7 +99,7 @@ function mergeObjects(base, override) {
 
 function setAtPath(target, dottedPath, value) {
   const segments = dottedPath.split(".").filter(Boolean);
-  if (segments.length === 0) throw new Error("Пустой путь конфигурации");
+  if (segments.length === 0) throw new Error("Empty config path");
 
   let cursor = target;
   for (let i = 0; i < segments.length - 1; i += 1) {
@@ -169,7 +169,7 @@ async function readTomlFile(filePath) {
   const result = userConfigSchema.safeParse(parsed);
   if (!result.success) {
     throw new Error(
-      `Невалидный конфиг ${filePath}\n${flattenZodIssues(result.error).join("\n")}`,
+      `Invalid config ${filePath}\n${flattenZodIssues(result.error).join("\n")}`,
     );
   }
   return result.data;
@@ -201,13 +201,15 @@ async function ensurePromptFile(
   }
 }
 
-async function findProjectFileUpwards(startDir, fileName) {
-  let currentDir = startDir;
+async function findProjectFileUpwards(startDir, fileName, homeDir = os.homedir()) {
+  const boundary = path.resolve(homeDir);
+  let currentDir = path.resolve(startDir);
   while (true) {
     const candidate = path.join(currentDir, fileName);
     if (await fileExists(candidate)) return candidate;
     const parentDir = path.dirname(currentDir);
-    if (parentDir === currentDir) return null;
+    // Stop at filesystem root or home directory boundary.
+    if (parentDir === currentDir || currentDir === boundary) return null;
     currentDir = parentDir;
   }
 }
@@ -339,6 +341,32 @@ export async function backupFile(filePath, paths = getAppPaths()) {
   return target;
 }
 
+/**
+ * Prepare auth entries for serialization.
+ * When the user selected "env" as the source, api_key is already undefined
+ * and will be omitted from the TOML file. When the user explicitly entered
+ * a key, it is preserved so the app can read it back on the next launch.
+ */
+function cleanAuth(auth) {
+  if (!auth || typeof auth !== "object") return auth;
+  const cleaned = {};
+  for (const [provider, settings] of Object.entries(auth)) {
+    if (settings && typeof settings === "object") {
+      // Drop keys that are explicitly undefined so TOML doesn't get "api_key = "
+      const entry = {};
+      for (const [key, value] of Object.entries(settings)) {
+        if (value !== undefined) {
+          entry[key] = value;
+        }
+      }
+      cleaned[provider] = entry;
+    } else {
+      cleaned[provider] = settings;
+    }
+  }
+  return cleaned;
+}
+
 function toUserConfig(config) {
   return {
     schema_version: config.schema_version,
@@ -347,7 +375,7 @@ function toUserConfig(config) {
     active_profile: config.active_profile ?? config.activeProfile,
     ui: config.ui,
     reasoning: config.reasoning,
-    auth: config.auth,
+    auth: cleanAuth(config.auth),
     cache: config.cache,
     orchestrator: config.orchestrator,
     intelligence: config.intelligence,

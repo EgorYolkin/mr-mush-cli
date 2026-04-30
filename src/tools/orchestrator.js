@@ -90,7 +90,6 @@ export async function executeToolCall(call, toolConfig, context, callbacks = {})
       cwd: context.cwd,
       timeoutMs: bashToolConfig.timeout_ms ?? 30_000,
       maxOutputChars: bashToolConfig.max_output_chars ?? 20_000,
-      shell: policy.shell ?? false,
     });
   }
 
@@ -125,7 +124,7 @@ export async function executeToolCall(call, toolConfig, context, callbacks = {})
  * @param {object} config
  * @returns {Promise<boolean>}
  */
-async function resolveToolCallCapability(provider, config) {
+async function resolveToolCallCapability(provider, config, runtimeOverrides = {}) {
   if (config.tools?.force_markdown) return false;
 
   const capability = provider.capabilities?.toolCalling;
@@ -134,7 +133,8 @@ async function resolveToolCallCapability(provider, config) {
 
   // 'dynamic' — ask the provider (e.g. Ollama model detection)
   if (typeof provider.supportsToolCalling === "function") {
-    const model = config.activeModel ?? config.active_model;
+    const model =
+      runtimeOverrides.model ?? config.activeModel ?? config.active_model;
     return provider.supportsToolCalling(model).catch(() => false);
   }
 
@@ -274,7 +274,11 @@ export async function runProviderWithTools({
   onAssistantToolIntent = null,
   onToolResult = null,
 }) {
-  const useNative = await resolveToolCallCapability(provider, config);
+  const useNative = await resolveToolCallCapability(
+    provider,
+    config,
+    runtimeOverrides,
+  );
 
   if (context) context.toolMode = useNative ? "native" : "markdown";
 

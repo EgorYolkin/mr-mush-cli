@@ -70,27 +70,31 @@ function paintDiffLine(line) {
 }
 
 function render({ title, bodyLines, options, selectedIdx, rerender = false }) {
-  const headerLines = ["⬢  mr. mush", `   ${title}`];
-  const approvalBlockLines = headerLines.length + bodyLines.length + 2 + options.length;
+  const accent = chalk.hex("#a855f7");
+  const headerLine = `${accent("⬢")}  ${accent("mr. mush")}`;
+  const titleLine = `    ${title}`;
+  const allLines = [headerLine, titleLine, ...bodyLines, "", ...options.map((option, index) => {
+    const pointer = index === selectedIdx ? accent("❯") : " ";
+    const label = index === selectedIdx ? chalk.bold(option.label) : option.label;
+    return `    ${pointer} ${label}`;
+  })];
+  const approvalBlockLines = allLines.length;
+
   if (rerender) {
     process.stdout.write(`\x1b[${approvalBlockLines}A`);
   }
   process.stdout.write("\r\x1b[J");
-  process.stdout.write(`\n${chalk.hex("#a855f7")(headerLines[0])}\n`);
-  process.stdout.write(`${chalk.dim(headerLines[1])}\n`);
-  process.stdout.write(`${bodyLines.join("\n")}\n\n`);
-
-  options.forEach((option, index) => {
-    const pointer = index === selectedIdx ? chalk.hex("#a855f7")("❯") : " ";
-    const label = index === selectedIdx ? chalk.bold(option.label) : option.label;
-    process.stdout.write(`${pointer} ${label}\n`);
-  });
+  // Hide cursor during selection
+  process.stdout.write("\x1b[?25l");
+  process.stdout.write(allLines.join("\n") + "\n");
 
   return approvalBlockLines;
 }
 
 function clear(renderedLines) {
   process.stdout.write(`\x1b[${renderedLines}A\r\x1b[J`);
+  // Restore cursor visibility
+  process.stdout.write("\x1b[?25h");
 }
 
 export async function requestBashApproval(cmd) {
@@ -105,8 +109,27 @@ export async function requestBashApproval(cmd) {
     process.stdin.resume();
     process.stdin.setEncoding("utf8");
 
+    function doRender(rerender = false) {
+      renderedLines = render({
+        title: `wants to run ${chalk.white.bold(cmd)}`,
+        bodyLines: [],
+        options: BASH_OPTIONS,
+        selectedIdx,
+        rerender,
+      });
+      hasRendered = true;
+    }
+
+    function handleResize() {
+      if (hasRendered) {
+        clear(renderedLines);
+        doRender(false);
+      }
+    }
+
     function cleanup(result) {
       process.stdin.removeListener("data", onData);
+      process.stdout.removeListener("resize", handleResize);
       process.stdin.setRawMode(false);
       process.stdin.pause();
       clear(renderedLines);
@@ -124,37 +147,18 @@ export async function requestBashApproval(cmd) {
       }
       if (key === "\x1b[A") {
         selectedIdx = (selectedIdx - 1 + BASH_OPTIONS.length) % BASH_OPTIONS.length;
-        renderedLines = render({
-          title: "wants to run",
-          bodyLines: [chalk.dim(`  ${cmd}`)],
-          options: BASH_OPTIONS,
-          selectedIdx,
-          rerender: hasRendered,
-        });
-        hasRendered = true;
+        doRender(hasRendered);
         return;
       }
       if (key === "\x1b[B") {
         selectedIdx = (selectedIdx + 1) % BASH_OPTIONS.length;
-        renderedLines = render({
-          title: "wants to run",
-          bodyLines: [chalk.dim(`  ${cmd}`)],
-          options: BASH_OPTIONS,
-          selectedIdx,
-          rerender: hasRendered,
-        });
-        hasRendered = true;
+        doRender(hasRendered);
       }
     }
 
     process.stdin.on("data", onData);
-    renderedLines = render({
-      title: "wants to run",
-      bodyLines: [chalk.dim(`  ${cmd}`)],
-      options: BASH_OPTIONS,
-      selectedIdx,
-    });
-    hasRendered = true;
+    process.stdout.on("resize", handleResize);
+    doRender(false);
   });
 }
 
@@ -182,8 +186,27 @@ export async function requestWriteApproval({ path, content, existingContent = nu
     process.stdin.resume();
     process.stdin.setEncoding("utf8");
 
+    function doRender(rerender = false) {
+      renderedLines = render({
+        title: "wants to write a file",
+        bodyLines,
+        options: WRITE_OPTIONS,
+        selectedIdx,
+        rerender,
+      });
+      hasRendered = true;
+    }
+
+    function handleResize() {
+      if (hasRendered) {
+        clear(renderedLines);
+        doRender(false);
+      }
+    }
+
     function cleanup(result) {
       process.stdin.removeListener("data", onData);
+      process.stdout.removeListener("resize", handleResize);
       process.stdin.setRawMode(false);
       process.stdin.pause();
       clear(renderedLines);
@@ -201,36 +224,18 @@ export async function requestWriteApproval({ path, content, existingContent = nu
       }
       if (key === "\x1b[A") {
         selectedIdx = (selectedIdx - 1 + WRITE_OPTIONS.length) % WRITE_OPTIONS.length;
-        renderedLines = render({
-          title: "wants to write a file",
-          bodyLines,
-          options: WRITE_OPTIONS,
-          selectedIdx,
-          rerender: hasRendered,
-        });
-        hasRendered = true;
+        doRender(hasRendered);
         return;
       }
       if (key === "\x1b[B") {
         selectedIdx = (selectedIdx + 1) % WRITE_OPTIONS.length;
-        renderedLines = render({
-          title: "wants to write a file",
-          bodyLines,
-          options: WRITE_OPTIONS,
-          selectedIdx,
-          rerender: hasRendered,
-        });
-        hasRendered = true;
+        doRender(hasRendered);
       }
     }
 
     process.stdin.on("data", onData);
-    renderedLines = render({
-      title: "wants to write a file",
-      bodyLines,
-      options: WRITE_OPTIONS,
-      selectedIdx,
-    });
-    hasRendered = true;
+    process.stdout.on("resize", handleResize);
+    doRender(false);
   });
 }
+

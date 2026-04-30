@@ -11,12 +11,6 @@ const REPO_INTELLIGENCE_PATTERNS = [
   /what\s+is\s+this\s+project/i,
   /what\s+project\s+is\s+this/i,
   /describe\s+this\s+project/i,
-  /карт[аы].*репозит/i,
-  /структур[аы].*репозит/i,
-  /что\s+это\s+за\s+проект/i,
-  /что\s+это\s+за\s+репозитор/i,
-  /какая.*карт/i,
-  /опиши.*проект/i,
 ];
 
 function wrapRepoMap(text) {
@@ -78,14 +72,14 @@ function extractRepoMapEntries(repoMapText) {
 
 function groupRepoAreas(entries) {
   const areaDefinitions = [
-    ["config", /^src\/config\//, "конфигурация, state и prompt stack"],
-    ["providers", /^src\/providers\//, "интеграции с LLM-провайдерами"],
-    ["ui", /^src\/ui\//, "терминальный UI, setup и chat-сцены"],
-    ["commands", /^src\/commands\//, "slash-команды и runtime overrides"],
-    ["history", /^src\/history\//, "история сессий, store и usage-метрики"],
-    ["orchestrator", /^src\/orchestrator\//, "маршрутизация задач и worker orchestration"],
-    ["intelligence", /^src\/intelligence\//, "AST-парсинг и генерация карты репозитория"],
-    ["tools", /^src\/tools\//, "tool loop и вызовы bash/write_file"],
+    ["config", /^src\/config\//, "configuration, state, and prompt stack"],
+    ["providers", /^src\/providers\//, "LLM provider integrations"],
+    ["ui", /^src\/ui\//, "terminal UI, setup, and chat scenes"],
+    ["commands", /^src\/commands\//, "slash commands and runtime overrides"],
+    ["history", /^src\/history\//, "session history, storage, and usage metrics"],
+    ["orchestrator", /^src\/orchestrator\//, "task routing and worker orchestration"],
+    ["intelligence", /^src\/intelligence\//, "AST parsing and repository map generation"],
+    ["tools", /^src\/tools\//, "tool loop and bash/write_file execution"],
   ];
 
   return areaDefinitions
@@ -136,15 +130,15 @@ function buildProjectLead(metadata, entries) {
   const parts = [];
   if (metadata.isEsm) parts.push("Node.js ESM");
   if (metadata.isCli || hasTerminalUi) parts.push("CLI");
-  if (hasProviders) parts.push("для работы с LLM-провайдерами");
-  if (hasOrchestrator) parts.push("с маршрутизацией через оркестратор");
-  if (hasIntelligence) parts.push("и встроенной code-intelligence картой репозитория");
+  if (hasProviders) parts.push("for working with LLM providers");
+  if (hasOrchestrator) parts.push("with orchestrator-based routing");
+  if (hasIntelligence) parts.push("and a built-in code-intelligence repository map");
 
   const descriptor = parts.length > 0
     ? parts.join(" ")
-    : "проект для работы с кодовой базой";
+    : "a codebase-oriented project";
 
-  return `Это проект ${metadata.name} - ${descriptor}.`;
+  return `This is the ${metadata.name} project: ${descriptor}.`;
 }
 
 export function isRepoIntelligencePrompt(prompt) {
@@ -172,14 +166,14 @@ export function buildRepoMapAnswer(repoMapText, prompt, metadata = {}) {
   const lines = [projectLead, ""];
 
   if (areas.length > 0) {
-    lines.push("Ключевые зоны:");
+    lines.push("Key areas:");
     for (const area of areas) {
       lines.push(`- \`${area.files[0].file.split("/").slice(0, 2).join("/")}/\` - ${area.description}`);
     }
     lines.push("");
   }
 
-  lines.push("Краткая карта:");
+  lines.push("Quick map:");
   for (const entry of topFiles) {
     lines.push(`\`${entry.file}\``);
     for (const symbol of entry.symbols) {

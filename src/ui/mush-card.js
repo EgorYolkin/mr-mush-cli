@@ -1,66 +1,13 @@
 import chalk from "chalk";
+import {
+  charWidth,
+  visibleLength,
+  fitText,
+  frameWidth,
+} from "./components/layout.js";
 
 function color(theme, name, fallback = chalk.white) {
   return theme.colors?.[name] ?? fallback;
-}
-
-function frameWidth() {
-  const columns = process.stdout.columns || 96;
-  return Math.max(6, columns - 4);
-}
-
-function visibleLength(value) {
-  return stripAnsi(value).reduce((width, char) => width + charWidth(char), 0);
-}
-
-function stripAnsi(value) {
-  return [...String(value).replace(/\x1b\[[0-?]*[ -/]*[@-~]/g, "")];
-}
-
-function charWidth(char) {
-  const codePoint = char.codePointAt(0);
-  if (!codePoint) return 0;
-  if (codePoint === 0) return 0;
-  if (codePoint < 32 || (codePoint >= 0x7f && codePoint < 0xa0)) return 0;
-  if (codePoint >= 0x300 && codePoint <= 0x36f) return 0;
-  if (
-    (codePoint >= 0x1100 && codePoint <= 0x115f) ||
-    (codePoint >= 0x2329 && codePoint <= 0x232a) ||
-    (codePoint >= 0x2e80 && codePoint <= 0xa4cf) ||
-    (codePoint >= 0xac00 && codePoint <= 0xd7a3) ||
-    (codePoint >= 0xf900 && codePoint <= 0xfaff) ||
-    (codePoint >= 0xfe10 && codePoint <= 0xfe19) ||
-    (codePoint >= 0xfe30 && codePoint <= 0xfe6f) ||
-    (codePoint >= 0xff00 && codePoint <= 0xff60) ||
-    (codePoint >= 0xffe0 && codePoint <= 0xffe6) ||
-    (codePoint >= 0x1f300 && codePoint <= 0x1faff)
-  ) {
-    return 2;
-  }
-  return 1;
-}
-
-function sliceToWidth(value, width) {
-  let currentWidth = 0;
-  let result = "";
-
-  for (const char of String(value)) {
-    const nextWidth = charWidth(char);
-    if (currentWidth + nextWidth > width) break;
-    result += char;
-    currentWidth += nextWidth;
-  }
-
-  return result;
-}
-
-function fitText(value, width) {
-  const length = visibleLength(value);
-  if (length <= width) return value + " ".repeat(width - length);
-  if (width <= 1) return " ".repeat(width);
-  const ellipsis = "…";
-  const truncated = sliceToWidth(value, width - visibleLength(ellipsis));
-  return `${truncated}${ellipsis}${" ".repeat(Math.max(0, width - visibleLength(truncated) - visibleLength(ellipsis)))}`;
 }
 
 function leadingWhitespace(value) {

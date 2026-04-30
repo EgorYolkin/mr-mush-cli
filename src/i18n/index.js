@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import MessageFormat from "@messageformat/core";
 
-const DEFAULT_LOCALE = "ru";
+const DEFAULT_LOCALE = "en";
 const FALLBACK_LOCALE = "en";
 const I18N_ENV_VAR = "MRMUSH_LOCALE";
 

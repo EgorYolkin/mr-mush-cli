@@ -19,7 +19,7 @@ test("classifyPrompt falls back to general for unmatched prompts", () => {
 });
 
 test("classifyPrompt short greeting stays heuristic and avoids router escalation", () => {
-  const result = classifyPrompt("привет");
+  const result = classifyPrompt("hello");
 
   assert.equal(result.domain, "general");
   assert.equal(result.action, "respond");
@@ -28,7 +28,7 @@ test("classifyPrompt short greeting stays heuristic and avoids router escalation
 });
 
 test("classifyPrompt project structure questions stay on heuristic analysis path", () => {
-  const result = classifyPrompt("что это за проект? какая его карта?");
+  const result = classifyPrompt("what is this project? show me the repo map");
 
   assert.equal(result.domain, "analysis");
   assert.equal(result.action, "explain");

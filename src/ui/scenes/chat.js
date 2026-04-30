@@ -654,7 +654,9 @@ export async function runChatScreen(context) {
     fullRefresh = true,
   } = {}) {
     if (fullRefresh) {
-      process.stdout.write("\x1b[?25l\x1b[H\x1b[J");
+      // Clear entire screen + scrollback to avoid ghost content in
+      // terminal emulators that preserve scrollback (Ghostty, iTerm2).
+      process.stdout.write("\x1b[?25l\x1b[2J\x1b[3J\x1b[H");
       if (splashVisible) {
         process.stdout.write("\n");
         splashFrame = buildSplashFrame(context);
@@ -709,7 +711,11 @@ export async function runChatScreen(context) {
             activeTheme(context),
             queuedInput,
             inputStatus(context, lastTokens, { animateSessionTokens: true }),
-            null,
+            (rerenderInput) => {
+              // On terminal resize: full screen redraw followed by input re-render.
+              // This prevents ghost lines from terminal line-reflow.
+              redrawScreen({ fullRefresh: true, renderInput: rerenderInput });
+            },
             [...transcript]
               .filter((e) => e.role === "user")
               .map((e) => e.text)
@@ -991,8 +997,15 @@ export async function runChatScreen(context) {
         pendingAnimation = null;
       }
 
+      let renderScheduled = false;
+
       function renderStreamingState() {
-        renderLiveRegion(buildAiMessageFrame(streamedText, context), "stream");
+        if (renderScheduled) return;
+        renderScheduled = true;
+        queueMicrotask(() => {
+          renderScheduled = false;
+          renderLiveRegion(buildAiMessageFrame(streamedText, context), "stream");
+        });
       }
 
       function scheduleStreamRender() {
@@ -1008,18 +1021,36 @@ export async function runChatScreen(context) {
           clearTimeout(streamRedrawTimer);
           streamRedrawTimer = null;
         }
+        renderScheduled = false;
         if (streamedText) {
-          renderStreamingState();
+          renderLiveRegion(buildAiMessageFrame(streamedText, context), "stream");
         }
       }
 
       resizeHandler = () => {
+        // Cancel any pending stream timer to avoid double-render.
+        if (streamRedrawTimer) {
+          clearTimeout(streamRedrawTimer);
+          streamRedrawTimer = null;
+        }
+        renderScheduled = false;
+        // Terminal reflow invalidates cursor tracking. Do a full redraw.
+        liveRegionCursorUpLines = 0;
+        liveRegionBlockHeight = 0;
         if (shouldStream && activeBlockMode === "stream" && streamedText) {
-          renderStreamingState();
+          redrawScreen({
+            fullRefresh: true,
+            streamingText: stripToolMarkup(streamedText),
+          });
+          activeBlockMode = "none";
           return;
         }
         if (activeBlockMode === "pending") {
-          renderPendingState();
+          redrawScreen({
+            fullRefresh: true,
+            pendingLine: formatPendingLine(context, pendingFrameIndex),
+          });
+          activeBlockMode = "none";
         }
       };
 
@@ -1347,36 +1378,33 @@ export async function runChatScreen(context) {
         resizeHandler = null;
       }
       stopPendingAnimation();
-      if (disableTerminalExpansion()) {
-        redrawScreen({ fullRefresh: true });
+      if (streamRedrawTimer) {
+        clearTimeout(streamRedrawTimer);
+        streamRedrawTimer = null;
       }
-      flushStreamRender();
-      if (shouldStream) {
-        if (passiveInput) {
-          queuedInput = passiveInput.stop();
-          passiveInput = null;
-          inputVisible = false;
-        }
-        const assistantText = response.text || streamedText;
-        if (assistantText) {
-          clearLiveRegion();
-          appendAssistantMessage(
-            assistantText,
-            response.usage,
-            null,
-            response.assistantMessage ?? null,
-          );
-        }
-      } else {
-        clearLiveRegion();
+      renderScheduled = false;
+      if (passiveInput) {
+        queuedInput = passiveInput.stop();
+        passiveInput = null;
+        inputVisible = false;
+      }
+      disableTerminalExpansion();
+
+      // Commit the final response to the transcript.
+      const assistantText = shouldStream
+        ? (response.text || streamedText)
+        : response.text;
+      if (assistantText) {
         appendAssistantMessage(
-          response.text,
+          assistantText,
           response.usage,
           null,
           response.assistantMessage ?? null,
         );
       }
-      process.stdout.write("\n");
+
+      // Full screen redraw clears scrollback of streaming artifacts.
+      redrawScreen({ fullRefresh: true });
     }
   } finally {
     teardownViewport();

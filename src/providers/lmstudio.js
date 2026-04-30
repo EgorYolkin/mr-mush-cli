@@ -35,7 +35,7 @@ export const lmstudioProvider = {
     const res = await fetch(`${BASE_URL}/v1/models`);
     if (!res.ok) throw new Error(`LM Studio API error: ${res.status}`);
     const { data } = await res.json();
-    if (!data?.length) throw new Error("Нет загруженных моделей в LM Studio");
+    if (!data?.length) throw new Error("No models are loaded in LM Studio");
     return data.map((m) => ({ value: m.id, label: m.id }));
   },
 

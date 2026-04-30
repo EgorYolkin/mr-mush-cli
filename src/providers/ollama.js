@@ -76,12 +76,15 @@ export const ollamaProvider = {
     const res = await fetch(`${baseUrl}/api/tags`);
     if (!res.ok) throw new Error(`Ollama API error: ${res.status}`);
     const { models } = await res.json();
-    if (!models?.length) throw new Error("Нет загруженных моделей. Запусти: ollama pull <model>");
+    if (!models?.length) throw new Error("No models are loaded. Run: ollama pull <model>");
     return models.map((m) => ({ value: m.name, label: m.name }));
   },
 
   async exec(resolvedConfig, prompt, runtimeOverrides = {}, signal = null, options = {}) {
     const model = runtimeOverrides.model ?? resolvedConfig.activeModel;
+    // Fallback timeout prevents indefinite hangs when Ollama freezes (OOM, GPU lock).
+    const timeoutMs = resolvedConfig.tools?.bash?.timeout_ms ?? 30_000;
+    const fallbackSignal = signal ?? AbortSignal.timeout(Math.max(timeoutMs * 10, 300_000));
     return openAiCompatibleChat({
       baseUrl: resolveOllamaBaseUrl(),
       providerName: "Ollama",
@@ -89,7 +92,7 @@ export const ollamaProvider = {
       prompt,
       promptStack: resolvedConfig.promptStack,
       messages: options.messages ?? null,
-      signal,
+      signal: fallbackSignal,
       onToken: options.onToken,
       tools: options.tools ?? null,
     });

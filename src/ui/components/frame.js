@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import { wrapText } from "./layout.js";
 import { activeTheme, color, resolveSymbol } from "./theme.js";
+import { renderMarkdown } from "./markdown.js";
 
 // ─── Frame object contract ────────────────────────────────────────────────────
 // Every build* function returns:
@@ -14,8 +15,9 @@ function buildMessageLines(text, width) {
   const lines = [];
 
   for (const rawLine of text.split("\n")) {
-    const fence = rawLine.match(/^```(\w+)?\s*$/);
-    if (fence) continue;
+    // Only strip agents-tool fence markers; preserve legitimate code fences.
+    const agentsFence = rawLine.match(/^```agents-tool\s*$/);
+    if (agentsFence) continue;
 
     const wrapped = wrapText(rawLine, width, "");
     if (wrapped.length === 0) {
@@ -66,10 +68,14 @@ export function buildAiMessageFrame(text, context) {
   const accent = color(theme, "accent", chalk.magenta);
   const name = theme.layout?.agentName ?? "mr. mush";
   const contentWidth = Math.max(1, (process.stdout.columns || 80) - 4);
-  const bodyLines = buildMessageLines(text, contentWidth);
+
+  // Strip tool markup first, then render markdown with syntax highlighting.
+  const cleaned = stripToolMarkup(text).replace(/```agents-tool[\s\S]*?```/g, "").trimEnd();
+  const bodyLines = renderMarkdown(cleaned, contentWidth);
+
   const lines = [`${accent(`${symbol}\u00A0${name}`)}`];
   for (const line of bodyLines) {
-    lines.push(`${accent("  ")}${chalk.white(line)}`);
+    lines.push(`${accent("  ")}${line}`);
   }
   return {
     text: `${lines.join("\n")}\n\n`,
@@ -98,17 +104,24 @@ export function buildToolEventFrame(title, text, context) {
 export function buildTerminalEventFrame(text, context) {
   const theme = activeTheme(context);
   const muted = color(theme, "muted", chalk.dim);
+  const accent = color(theme, "accent", chalk.magenta);
   const symbol = resolveSymbol(context);
-  const continuationPrefix = "  ";
+  const name = theme.layout?.agentName ?? "mr. mush";
   const contentWidth = Math.max(1, (process.stdout.columns || 80) - 4);
   const bodyLines = buildMessageLines(text, contentWidth);
-  const toolMode = context.toolMode;
-  const terminalLabel =
-    toolMode === "native" ? "Terminal  [native]" : "Terminal";
-  const lines = [muted(`${symbol} ${terminalLabel}`)];
-  for (let index = 0; index < bodyLines.length; index += 1) {
-    lines.push(muted(`${continuationPrefix}${bodyLines[index]}`));
+  const lines = [`${accent(`${symbol}\u00A0${name}`)}`];
+
+  for (const bodyLine of bodyLines) {
+    const trimmed = bodyLine.trimStart();
+    if (trimmed.startsWith("❯ ")) {
+      // Command line: accent ❯ + bold command
+      lines.push(`  ${accent("❯")} ${chalk.white.bold(trimmed.slice(2))}`);
+    } else {
+      // Output or description lines
+      lines.push(muted(`  ${bodyLine}`));
+    }
   }
+
   return {
     text: `${lines.join("\n")}\n\n`,
     blockHeight: lines.length + 1,
@@ -141,7 +154,7 @@ export function buildExpandableTerminalEventFrame(entry, context) {
 // Produces the structured meta object consumed by appendAssistantMessage.
 
 export function createTerminalEventMeta(toolCall, toolResult) {
-  if (!toolCall) return "";
+  if (!toolCall) return null;
 
   if (toolCall.name === "bash") {
     const outputLines = [];
@@ -162,14 +175,10 @@ export function createTerminalEventMeta(toolCall, toolResult) {
       );
     }
 
-    const headLines = [
-      `wants to run ${toolCall.args.cmd}`,
-      "",
-      `❯ ${toolCall.args.cmd}`,
-    ];
-    const fullLines = [...headLines, "", ...outputLines];
+    const cmdLine = `❯ ${toolCall.args.cmd}`;
+    const fullLines = [cmdLine, ...outputLines];
     const visibleOutputLines = outputLines.slice(0, 10);
-    const collapsedLines = [...headLines, "", ...visibleOutputLines];
+    const collapsedLines = [cmdLine, ...visibleOutputLines];
     const canExpand = outputLines.length >= 10;
 
     return {
@@ -183,20 +192,17 @@ export function createTerminalEventMeta(toolCall, toolResult) {
 
   if (toolCall.name === "write_file") {
     const lines = [
-      `wants to write ${toolCall.args.path}`,
-      "",
       `❯ write_file ${toolCall.args.path}`,
     ];
     if (toolResult?.error?.trim()) {
       lines.push(
-        "",
         ...toolResult.error
           .trim()
           .split("\n")
           .map((line) => `  ${line}`),
       );
     } else {
-      lines.push("", `  written: ${toolResult?.written ?? 0} bytes`);
+      lines.push(`  written: ${toolResult?.written ?? 0} bytes`);
     }
     return {
       kind: "terminal_event",

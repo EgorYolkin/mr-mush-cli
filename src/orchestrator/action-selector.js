@@ -10,10 +10,9 @@ export const DOMAINS = Object.freeze(DOMAIN_KEYWORDS);
 
 const TRIVIAL_GENERAL_PATTERNS = [
   /^(hi|hello|hey|yo|sup|hola)$/i,
-  /^(привет|прив|здарова|здравствуйте|хай|ку)$/i,
-  /^(thanks|thank you|thx|спасибо|спс)$/i,
-  /^(ok|okay|ок|окей|ага|угу)$/i,
-  /^(bye|goodbye|пока|до свидания)$/i,
+  /^(thanks|thank you|thx)$/i,
+  /^(ok|okay)$/i,
+  /^(bye|goodbye)$/i,
 ];
 
 const REPO_MAP_PATTERNS = [
@@ -24,12 +23,6 @@ const REPO_MAP_PATTERNS = [
   /what\s+is\s+this\s+project/i,
   /what\s+project\s+is\s+this/i,
   /describe\s+this\s+project/i,
-  /карт[аы].*репозит/i,
-  /структур[аы].*репозит/i,
-  /что\s+это\s+за\s+проект/i,
-  /что\s+это\s+за\s+репозитор/i,
-  /какая.*карт/i,
-  /опиши.*проект/i,
 ];
 
 function normalizePrompt(prompt) {

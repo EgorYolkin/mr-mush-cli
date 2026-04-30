@@ -2,9 +2,33 @@ import { openAiCompatibleChat } from "./openai-compatible.js";
 
 const BASE_URL = "https://api.deepseek.com";
 const DEFAULT_MODELS = [
-  { value: "deepseek-chat", label: "deepseek-chat" },
+  { value: "deepseek-v4-flash", label: "deepseek-v4-flash" },
   { value: "deepseek-reasoner", label: "deepseek-reasoner" },
 ];
+
+const THINKING_CONFIG_BY_LEVEL = {
+  off: { thinking: { type: "disabled" } },
+  minimal: {
+    reasoning_effort: "high",
+    thinking: { type: "enabled" },
+  },
+  low: {
+    reasoning_effort: "high",
+    thinking: { type: "enabled" },
+  },
+  medium: {
+    reasoning_effort: "high",
+    thinking: { type: "enabled" },
+  },
+  high: {
+    reasoning_effort: "high",
+    thinking: { type: "enabled" },
+  },
+  xhigh: {
+    reasoning_effort: "max",
+    thinking: { type: "enabled" },
+  },
+};
 
 export const deepseekProvider = {
   id: "deepseek",
@@ -12,22 +36,25 @@ export const deepseekProvider = {
   source: "api",
   binary: "env",
   defaultModel: "deepseek-chat",
-  capabilities: { toolCalling: true },
+  capabilities: { toolCalling: "dynamic" },
 
   getAuthRequirements(resolvedConfig) {
     return resolvedConfig.auth.deepseek;
   },
 
   async isAvailable(resolvedConfig = null) {
-    const envKey = resolvedConfig?.auth?.deepseek?.env_key ?? "DEEPSEEK_API_KEY";
+    const envKey =
+      resolvedConfig?.auth?.deepseek?.env_key ?? "DEEPSEEK_API_KEY";
     const configuredApiKey = resolvedConfig?.auth?.deepseek?.api_key;
     return Boolean(configuredApiKey || process.env[envKey]);
   },
 
   async fetchModels(resolvedConfig = null) {
-    const envKey = resolvedConfig?.auth?.deepseek?.env_key ?? "DEEPSEEK_API_KEY";
+    const envKey =
+      resolvedConfig?.auth?.deepseek?.env_key ?? "DEEPSEEK_API_KEY";
     const i18n = resolvedConfig?.i18n ?? null;
-    const apiKey = resolvedConfig?.auth?.deepseek?.api_key ?? process.env[envKey];
+    const apiKey =
+      resolvedConfig?.auth?.deepseek?.api_key ?? process.env[envKey];
     if (!apiKey) {
       const message = i18n
         ? i18n.t("providers.deepseek.missingEnv", { envKey })
@@ -38,8 +65,20 @@ export const deepseekProvider = {
     return DEFAULT_MODELS;
   },
 
-  async exec(resolvedConfig, prompt, runtimeOverrides = {}, signal = null, options = {}) {
+  async supportsToolCalling(modelName) {
+    return modelName !== "deepseek-reasoner";
+  },
+
+  async exec(
+    resolvedConfig,
+    prompt,
+    runtimeOverrides = {},
+    signal = null,
+    options = {},
+  ) {
     const model = runtimeOverrides.model ?? resolvedConfig.activeModel;
+    const thinkingLevel =
+      runtimeOverrides.thinkingLevel ?? resolvedConfig.thinkingLevel ?? "medium";
     const envKey = resolvedConfig.auth.deepseek.env_key;
     const apiKey = resolvedConfig.auth.deepseek.api_key ?? process.env[envKey];
     if (!apiKey) {
@@ -59,6 +98,9 @@ export const deepseekProvider = {
       signal,
       onToken: options.onToken,
       tools: options.tools ?? null,
+      requestBodyExtras:
+        THINKING_CONFIG_BY_LEVEL[thinkingLevel] ??
+        THINKING_CONFIG_BY_LEVEL.medium,
     });
   },
 };

@@ -99,6 +99,7 @@
       "profile": "Switch active profile",
       "prompt": "Inspect or edit prompt layers",
       "usage": "Show total usage metrics",
+      "mcp": "Show active MCP servers",
       "update": "Check for Mr. Mush updates",
       "debug": "Toggle debug mode",
       "statusbar": "Configure status bar",

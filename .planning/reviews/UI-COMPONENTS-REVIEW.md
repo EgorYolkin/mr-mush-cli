@@ -51,7 +51,7 @@ The entire file is unused. `header`, `chatMessage`, `divider` never appear in ei
 **F. `resetTerminalSurface` defined in setup.js** (`setup.js:24–26`)
 A generic terminal utility living in a scene file. `chat.js` has its own variant at line 866 without a named function. Both scenes independently manage terminal surface state.
 
-**G. Hardcoded Russian strings** (`chat.js:372`) — `"свернуть" / "развернуть"` bypass the i18n system. **This is a bug.**
+**G. Hardcoded Russian strings** (`chat.js:372`) — `"collapse" / "expand"` bypass the i18n system. **This is a bug.**
 
 ---
 

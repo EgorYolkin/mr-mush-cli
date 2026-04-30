@@ -9,7 +9,7 @@
 
 # mush
 
-Минималистичный локальный AI CLI с акцентом на TUI, стриминг, tool calling и контекстную инженерию.
+Minimal local AI CLI focused on terminal UI, streaming, tool calling, and context engineering.
 
 ![platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-111111?style=flat-square)
 ![runtime](https://img.shields.io/badge/runtime-Node.js-339933?style=flat-square&logo=node.js&logoColor=white)
@@ -22,46 +22,46 @@
 
 ![preview](resources/preview.gif)
 
-## Что это
+## Overview
 
-`mush` запускает локальных и удалённых моделей в одном интерфейсе:
+`mush` runs local and remote models in a single interface:
 
-- chat UI прямо в терминале
-- стриминг ответов
-- project prompts через `MRMUSH.md` и `AGENTS.md`
-- bash tool calls с подтверждением
-- история сессий и проектные approvals
-- кастомные темы, статусбар и маркеры сообщений
+- Chat UI directly in the terminal
+- Streaming responses
+- Project prompts via `MRMUSH.md` and `AGENTS.md`
+- Bash tool calls with approval
+- Session history and project-scoped approvals
+- Custom themes, status bar, and message markers
 
-## Запуск
+## Run
 
 ```bash
 npm install
 node bin/mr-mush.js
 ```
 
-Для глобального вызова:
+For a global command:
 
 ```bash
 npm link
 mr-mush
 ```
 
-Для Harbor / Terminal-Bench 2.0:
+For Harbor / Terminal-Bench 2.0:
 
 ```bash
 mr-mush-harbor --instruction "inspect the repo and fix the failing test" --provider ollama --model qwen2.5-coder:7b
 ```
 
-## Конфиг
+## Config
 
-Глобальный конфиг:
+Global config:
 
 ```text
 ~/.mrmush/config.toml
 ```
 
-Проектные файлы:
+Project files:
 
 ```text
 .mrmush/config.toml
@@ -69,7 +69,7 @@ MRMUSH.md
 AGENTS.md
 ```
 
-Переменные окружения:
+Environment variables:
 
 ```text
 MRMUSH_PROVIDER
@@ -79,20 +79,20 @@ MRMUSH_THINKING
 MRMUSH_LOCALE
 ```
 
-## Возможности
+## Features
 
-- OpenAI, Anthropic, Gemini, Ollama и LM Studio
-- потоковый вывод ответов вне CLI-режима
-- project-level prompt stack: `MRMUSH.md`, `AGENTS.md`, project prompt files
-- история диалогов и восстановление сессий
-- approval flow для bash tool calls
-- project-scoped approvals в `.mrmush/`
-- настройка темы, маркера сообщения и статусбара
-- мультстрочный input с историей и навигацией по тексту
+- OpenAI, Anthropic, Gemini, Ollama, and LM Studio
+- Streaming output outside CLI mode
+- Project-level prompt stack: `MRMUSH.md`, `AGENTS.md`, and project prompt files
+- Conversation history and session restore
+- Approval flow for bash tool calls
+- Project-scoped approvals in `.mrmush/`
+- Theme, message marker, and status bar customization
+- Multiline input with history and text navigation
 
-## Команды
+## Commands
 
-### Модель и режим
+### Model and mode
 
 ```text
 /think off|minimal|low|medium|high|xhigh
@@ -101,7 +101,7 @@ MRMUSH_LOCALE
 /profile use ...
 ```
 
-### Интерфейс
+### Interface
 
 ```text
 /dot <symbol>
@@ -109,7 +109,7 @@ MRMUSH_LOCALE
 /card
 ```
 
-### Промпты и конфиг
+### Prompts and config
 
 ```text
 /prompt show [system|profile|provider|project]
@@ -120,28 +120,28 @@ MRMUSH_LOCALE
 /config save
 ```
 
-### История
+### History
 
 ```text
 /resume
 ```
 
-## Input и навигация
+## Input and navigation
 
 ```text
-Enter              отправить сообщение
-Shift+Enter        перенос строки
-← / →              движение по символам
-Opt+← / Opt+→      движение по словам
-Ctrl+← / Ctrl+→    движение по словам на Windows/Linux
-Cmd+← / Cmd+→      начало / конец строки
-Home / End         начало / конец строки на Windows/Linux
-↑ / ↓              движение по строкам, а на границе — история
+Enter              send message
+Shift+Enter        insert newline
+← / →              move by character
+Opt+← / Opt+→      move by word
+Ctrl+← / Ctrl+→    move by word on Windows/Linux
+Cmd+← / Cmd+→      start / end of line
+Home / End         start / end of line on Windows/Linux
+↑ / ↓              move by line, and history at boundaries
 ```
 
 ## Tool calling
 
-`mush` умеет вызывать bash-команды от имени модели через approval flow. Allowlist настраивается в конфиге:
+`mush` can run bash commands on behalf of the model through the approval flow. The allowlist is configured in TOML:
 
 ```toml
 [tools.bash]
@@ -149,11 +149,11 @@ allowed_commands = ["pwd", "ls", "rg", "cat", "tree"]
 allowed_git_subcommands = ["status", "diff", "log", "show"]
 ```
 
-Если модель запросит команду вне allowlist, она будет заблокирована policy-слоем до выполнения.
+If the model requests a command outside the allowlist, the policy layer blocks it before execution.
 
-## Разработка
+## Development
 
-Быстрая проверка:
+Quick checks:
 
 ```bash
 node --check src/ui/scenes/chat.js
@@ -162,13 +162,13 @@ node --check src/ui/input.js
 
 ### Harbor adapter
 
-В репозитории есть Harbor adapter для Terminal-Bench 2.0:
+The repository includes a Harbor adapter for Terminal-Bench 2.0:
 
 ```text
 integrations/harbor/mr_mush_agent.py
 ```
 
-Пример локального запуска с Docker и локальной Ollama:
+Example local run with Docker and local Ollama:
 
 ```bash
 harbor run \

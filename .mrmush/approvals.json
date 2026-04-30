@@ -3,66 +3,6 @@
   "bash": {
     "allowed": [
       {
-        "cmd": "tree",
-        "created_at": "2026-04-21T19:09:58.521Z"
-      },
-      {
-        "cmd": "ls",
-        "created_at": "2026-04-21T19:13:46.438Z"
-      },
-      {
-        "cmd": "pwd",
-        "created_at": "2026-04-21T19:16:34.348Z"
-      },
-      {
-        "cmd": "cat src/ui/chat/chat.js",
-        "created_at": "2026-04-22T09:23:53.617Z"
-      },
-      {
-        "cmd": "find . -type f -name \"*.js\" -not -path \"*/node_modules/*\"",
-        "created_at": "2026-04-22T11:24:58.834Z"
-      },
-      {
-        "cmd": "find . -type f -name \"*.md\" -not -path \"*/node_modules/*\"",
-        "created_at": "2026-04-22T11:28:03.602Z"
-      },
-      {
-        "cmd": "cat ./AGENTS.md",
-        "created_at": "2026-04-22T11:29:06.241Z"
-      },
-      {
-        "cmd": "cat .gitignore",
-        "created_at": "2026-04-22T11:31:58.404Z"
-      },
-      {
-        "cmd": "ls -la",
-        "created_at": "2026-04-22T11:33:52.372Z"
-      },
-      {
-        "cmd": "ls -la src/",
-        "created_at": "2026-04-22T11:34:06.880Z"
-      },
-      {
-        "cmd": "find . -name *.js -not -path */node_modules/*",
-        "created_at": "2026-04-22T11:35:16.713Z"
-      },
-      {
-        "cmd": "sed -n '1,100p' ./src/ui/scenes/chat.js",
-        "created_at": "2026-04-22T11:41:47.553Z"
-      },
-      {
-        "cmd": "sed -n '101,200p' ./src/ui/scenes/chat.js",
-        "created_at": "2026-04-22T11:42:04.649Z"
-      },
-      {
-        "cmd": "mkdir -p SalfetkaVPNTunnel && curl -L -o SalfetkaVPNTunnel/geoip.dat https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat && curl -L -o SalfetkaVPNTunnel/geosite.dat https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat",
-        "created_at": "2026-04-22T18:45:06.993Z"
-      },
-      {
-        "cmd": "git status --short",
-        "created_at": "2026-04-23T12:37:39.533Z"
-      },
-      {
         "cmd": "find src -type f -name \"*.js\" | shuf -n1",
         "created_at": "2026-04-24T09:39:50.946Z"
       },
@@ -125,6 +65,286 @@
       {
         "cmd": "node --test src/mcp/servers.test.js",
         "created_at": "2026-04-25T11:53:07.583Z"
+      },
+      {
+        "cmd": "rg \"debug\" --type js --line-number src/orchestrator/ src/providers/",
+        "created_at": "2026-04-26T05:34:58.504Z"
+      },
+      {
+        "cmd": "rg \"debug\\|--debug\\|DEBUG\" --type js --line-number -i src/",
+        "created_at": "2026-04-26T05:34:59.703Z"
+      },
+      {
+        "cmd": "rg -n \"debug\" --type js src/orchestrator/ src/providers/ 2>/dev/null | head -40",
+        "created_at": "2026-04-26T05:51:07.269Z"
+      },
+      {
+        "cmd": "rg -n \"messages\" --type js src/orchestrator/sub-agent-manager.js 2>/dev/null",
+        "created_at": "2026-04-26T05:51:08.392Z"
+      },
+      {
+        "cmd": "sed -n '1,80p' src/orchestrator/sub-agent-manager.js",
+        "created_at": "2026-04-26T05:51:12.810Z"
+      },
+      {
+        "cmd": "rg -n \"emitDebug\\|debug\\|printDebug\\|showDebug\\|verbose\" --type js src/ | head -30",
+        "created_at": "2026-04-26T05:51:13.978Z"
+      },
+      {
+        "cmd": "rg -n \"onDebugEvent\\|emitDebug\" --type js src/",
+        "created_at": "2026-04-26T05:51:17.560Z"
+      },
+      {
+        "cmd": "rg -n \"debug\\|verbos\" --type js src/ui/scenes/chat.js | head -20",
+        "created_at": "2026-04-26T05:51:24.540Z"
+      },
+      {
+        "cmd": "rg -n \"onDebugEvent\\|emitDebug\\|trace\" --type js src/ 2>/dev/null",
+        "created_at": "2026-04-26T05:51:26.858Z"
+      },
+      {
+        "cmd": "rg -n \"runtimeOverrides\\|debug\" src/ui/scenes/chat.js | head -30",
+        "created_at": "2026-04-26T05:51:31.729Z"
+      },
+      {
+        "cmd": "rg -n \"DEBUG\\|debug\\|verbose\" src/config/schema.js",
+        "created_at": "2026-04-26T05:51:33.000Z"
+      },
+      {
+        "cmd": "rg -n \"debug\\|verbose\" src/config/ src/ui/ 2>/dev/null | head -40",
+        "created_at": "2026-04-26T05:51:57.905Z"
+      },
+      {
+        "cmd": "rg -rn \"debug\\|verbose\\|trace\" --include='*.toml' . 2>/dev/null | head -20",
+        "created_at": "2026-04-26T05:51:59.422Z"
+      },
+      {
+        "cmd": "rg -rn \"log_level\\|LOG_LEVEL\\|DEBUG\\|MR_MUSH\" --type js src/ 2>/dev/null | head -20",
+        "created_at": "2026-04-26T05:52:19.799Z"
+      },
+      {
+        "cmd": "rg -rn \"DEBUG\\|NODE_ENV\\|VERBOSE\" bin/ 2>/dev/null",
+        "created_at": "2026-04-26T05:52:20.918Z"
+      },
+      {
+        "cmd": "cat bin/mr-mush.js",
+        "created_at": "2026-04-26T05:52:25.067Z"
+      },
+      {
+        "cmd": "rg \"runProviderWithTools\\|async function run\\|provider\\.(chat|complete|generate)\" --type js --line-number -n src/",
+        "created_at": "2026-04-26T05:52:37.809Z"
+      },
+      {
+        "cmd": "rg \"runProviderWithTools\\|provider\\.\\|runProvider\\|\\.chat\\|\\.complete\" --type js --line-number -n src/orchestrator/ src/providers/",
+        "created_at": "2026-04-26T05:52:41.750Z"
+      },
+      {
+        "cmd": "rg \"runProviderWithTools\" --type js --line-number -n src/",
+        "created_at": "2026-04-26T05:52:45.152Z"
+      },
+      {
+        "cmd": "sed -n '262,310p' src/tools/orchestrator.js",
+        "created_at": "2026-04-26T05:52:49.173Z"
+      },
+      {
+        "cmd": "rg \"MRMUSH_DEBUG\\|debug\" --type js --line-number -n src/tools/orchestrator.js",
+        "created_at": "2026-04-26T05:52:52.503Z"
+      },
+      {
+        "cmd": "rg \"MRMUSH_DEBUG\\|context\\.debug\\|debug\" --type js --line-number -n src/tools/orchestrator.js",
+        "created_at": "2026-04-26T05:53:00.232Z"
+      },
+      {
+        "cmd": "rg \"MRMUSH_DEBUG\" --type js --line-number -n src/",
+        "created_at": "2026-04-26T05:53:05.568Z"
+      },
+      {
+        "cmd": "rg \"runWithNativeTools\\|runWithMarkdownTools\" --type js --line-number -n src/tools/orchestrator.js",
+        "created_at": "2026-04-26T05:53:08.949Z"
+      },
+      {
+        "cmd": "cd /Users/gw/git/mr-mush && git status --short && echo \"---LAST 5 COMMITS---\" && git log --oneline -5",
+        "created_at": "2026-04-26T05:54:43.790Z"
+      },
+      {
+        "cmd": "find . -type f -name \"*.py\" -not -path \"*/node_modules/*\"",
+        "created_at": "2026-04-28T06:25:02.188Z"
+      },
+      {
+        "cmd": "ls -la",
+        "created_at": "2026-04-30T16:39:14.657Z"
+      },
+      {
+        "cmd": "ls tests",
+        "created_at": "2026-04-30T16:39:51.162Z"
+      },
+      {
+        "cmd": "head -60 README.md",
+        "created_at": "2026-04-30T16:39:57.219Z"
+      },
+      {
+        "cmd": "head -80 bin/mr-mush.js",
+        "created_at": "2026-04-30T16:39:58.650Z"
+      },
+      {
+        "cmd": "cat src/router.js",
+        "created_at": "2026-04-30T16:39:59.507Z"
+      },
+      {
+        "cmd": "cat src/config/schema.js",
+        "created_at": "2026-04-30T16:40:03.928Z"
+      },
+      {
+        "cmd": "cat src/config/loader.js",
+        "created_at": "2026-04-30T16:40:05.153Z"
+      },
+      {
+        "cmd": "cat src/providers/index.js",
+        "created_at": "2026-04-30T16:40:05.723Z"
+      },
+      {
+        "cmd": "cat src/orchestrator/index.js",
+        "created_at": "2026-04-30T16:40:06.136Z"
+      },
+      {
+        "cmd": "cat src/orchestrator/action-selector.js",
+        "created_at": "2026-04-30T16:40:32.513Z"
+      },
+      {
+        "cmd": "cat src/ui/scenes/chat.js",
+        "created_at": "2026-04-30T16:40:33.254Z"
+      },
+      {
+        "cmd": "cat src/tools/orchestrator.js",
+        "created_at": "2026-04-30T16:40:33.832Z"
+      },
+      {
+        "cmd": "cat src/intelligence/index.js",
+        "created_at": "2026-04-30T16:40:38.237Z"
+      },
+      {
+        "cmd": "cat src/commands/index.js",
+        "created_at": "2026-04-30T16:40:38.861Z"
+      },
+      {
+        "cmd": "cat src/mcp/servers.js",
+        "created_at": "2026-04-30T16:40:39.446Z"
+      },
+      {
+        "cmd": "cat package.json",
+        "created_at": "2026-04-30T16:40:46.086Z"
+      },
+      {
+        "cmd": "ls -R src/",
+        "created_at": "2026-04-30T16:40:55.282Z"
+      },
+      {
+        "cmd": "ls -R tests/",
+        "created_at": "2026-04-30T16:40:55.998Z"
+      },
+      {
+        "cmd": "ls -R bin/",
+        "created_at": "2026-04-30T16:40:56.582Z"
+      },
+      {
+        "cmd": "head -30 bin/mr-mush.js",
+        "created_at": "2026-04-30T16:41:24.070Z"
+      },
+      {
+        "cmd": "head -80 src/router.js",
+        "created_at": "2026-04-30T16:41:36.241Z"
+      },
+      {
+        "cmd": "head -50 src/config/schema.js",
+        "created_at": "2026-04-30T16:41:37.073Z"
+      },
+      {
+        "cmd": "head -50 src/providers/index.js",
+        "created_at": "2026-04-30T16:41:37.886Z"
+      },
+      {
+        "cmd": "head -50 src/orchestrator/index.js",
+        "created_at": "2026-04-30T16:41:38.588Z"
+      },
+      {
+        "cmd": "head -80 src/orchestrator/action-selector.js",
+        "created_at": "2026-04-30T16:41:44.416Z"
+      },
+      {
+        "cmd": "head -60 src/ui/scenes/chat.js",
+        "created_at": "2026-04-30T16:41:45.296Z"
+      },
+      {
+        "cmd": "head -40 src/commands/index.js",
+        "created_at": "2026-04-30T16:41:45.887Z"
+      },
+      {
+        "cmd": "head -60 src/tools/orchestrator.js",
+        "created_at": "2026-04-30T16:41:46.507Z"
+      },
+      {
+        "cmd": "head -40 src/config/loader.js",
+        "created_at": "2026-04-30T16:41:47.090Z"
+      },
+      {
+        "cmd": "head -30 src/providers/openai.js",
+        "created_at": "2026-04-30T16:41:52.795Z"
+      },
+      {
+        "cmd": "head -30 src/providers/anthropic.js",
+        "created_at": "2026-04-30T16:41:53.344Z"
+      },
+      {
+        "cmd": "head -30 src/providers/deepseek.js",
+        "created_at": "2026-04-30T16:41:53.815Z"
+      },
+      {
+        "cmd": "head -30 src/providers/base.js",
+        "created_at": "2026-04-30T16:41:54.246Z"
+      },
+      {
+        "cmd": "head -40 src/intelligence/repo-map.js",
+        "created_at": "2026-04-30T16:41:54.749Z"
+      },
+      {
+        "cmd": "head -40 src/intelligence/ast-parser.js",
+        "created_at": "2026-04-30T16:41:55.194Z"
+      },
+      {
+        "cmd": "head -40 tests/action-selector.test.js",
+        "created_at": "2026-04-30T16:42:10.115Z"
+      },
+      {
+        "cmd": "head -30 tests/tools/parser.test.js",
+        "created_at": "2026-04-30T16:42:11.048Z"
+      },
+      {
+        "cmd": "head -30 locales/en.json",
+        "created_at": "2026-04-30T16:42:11.740Z"
+      },
+      {
+        "cmd": "head -20 .gitignore",
+        "created_at": "2026-04-30T16:42:12.432Z"
+      },
+      {
+        "cmd": "ls -la src/",
+        "created_at": "2026-04-30T16:42:47.554Z"
+      },
+      {
+        "cmd": "ls -la tests/",
+        "created_at": "2026-04-30T16:42:48.311Z"
+      },
+      {
+        "cmd": "git log --oneline -5",
+        "created_at": "2026-04-30T16:42:48.851Z"
+      },
+      {
+        "cmd": "find . -type f -name \"*.js\" -not -path \"*/node_modules/*\" | head -60",
+        "created_at": "2026-04-30T16:49:59.957Z"
+      },
+      {
+        "cmd": "find . -type f -not -path \"*/node_modules/*\" -not -path \"*/.git/*\" | head -80",
+        "created_at": "2026-04-30T16:50:00.645Z"
       }
     ]
   }

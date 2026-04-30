@@ -35,7 +35,7 @@ export const openaiProvider = {
   exec(resolvedConfig, prompt, runtimeOverrides = {}, signal = null) {
     const rawLevel =
       runtimeOverrides.thinkingLevel ?? resolvedConfig.thinkingLevel;
-    // Используем hasOwn чтобы null (для 'off') не проваливался через ?? к rawLevel
+    // Use hasOwn so null ("off") does not fall through `??` to rawLevel.
     const effort = Object.hasOwn(EFFORT_MAP, rawLevel)
       ? EFFORT_MAP[rawLevel]
       : rawLevel;
@@ -75,7 +75,7 @@ export const openaiProvider = {
       child.stdout.on("data", (chunk) => {
         buffer += chunk.toString();
         const lines = buffer.split("\n");
-        buffer = lines.pop(); // незавершённая строка остаётся в буфере
+        buffer = lines.pop(); // Keep the incomplete line buffered until the next chunk.
 
         for (const line of lines) {
           if (!line.trim()) continue;
@@ -91,7 +91,7 @@ export const openaiProvider = {
               usage = event.usage ?? null;
             }
           } catch {
-            // не JSON-строка (например, "Reading additional input from stdin...")
+            // Ignore non-JSON lines such as "Reading additional input from stdin...".
           }
         }
       });

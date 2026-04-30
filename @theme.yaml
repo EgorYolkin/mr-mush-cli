@@ -1,11 +1,11 @@
-# Тема Mr. Mush для текущего проекта.
-# Этот файл переопределяет встроенную тему и глобальную ~/.mrmush/theme.yaml.
-# Изменяй только нужные поля: отсутствующие значения будут унаследованы.
-# После правок просто перезапусти mrmush в этом проекте.
+# Mr. Mush theme for the current project.
+# This file overrides the built-in theme and the global ~/.mrmush/theme.yaml.
+# Change only the fields you need; missing values will be inherited.
+# After editing, restart mrmush in this project.
 
-# Цвета интерфейса.
-# fg и bg принимают hex-цвета (#aabbcc) или токены вроде cyan, magenta, whiteBright.
-# Доступные флаги стиля: bold, dim, italic, underline, inverse.
+# UI colors.
+# fg and bg accept hex colors (#aabbcc) or tokens such as cyan, magenta, and whiteBright.
+# Available style flags: bold, dim, italic, underline, inverse.
 colors:
   primary:
     fg: "#00ff9f"
@@ -35,8 +35,8 @@ colors:
     bg: "#fe53bb"
     bold: true
 
-# Символы интерфейса.
-# Здесь можно менять prompt, messageDot и рамку frame.
+# UI symbols.
+# You can change prompt, messageDot, and the frame characters here.
 symbols:
   robot: 𓆩
   messageDot: ✦
@@ -54,9 +54,9 @@ symbols:
     horizontal: ─
     vertical: │
 
-# Текстовый layout.
-# splash содержит ASCII-арт гриба.
-# maxSuggestions и inputPaddingX влияют на поведение input UI.
+# Text layout.
+# splash contains the mushroom ASCII art.
+# maxSuggestions and inputPaddingX affect input UI behavior.
 layout:
   agentName: んのむし
   inputPaddingX: 1
@@ -77,8 +77,8 @@ layout:
     - "      ⠈⠙⠻⠿⠿⠿⠿⠿⠟⠋⠁"
     - ""
 
-# Анимации интерфейса.
-# frames используются для индикатора thinking.
+# UI animations.
+# frames are used for the thinking indicator.
 animation:
   frames:
     - ◰
